@@ -138,3 +138,21 @@ else 결제 실패
     결제-->>사용자: 결제 실패 메시지
 end
 ```
+
+# ERD
+![img.png](erd.png)
+### 테이블 구성
+
+- 사용자, 지갑, 상품, 쿠폰, 주문, 결제 등 주요 엔티티를 중심으로 데이터 구조를 설계.
+- 이력 관리(지갑 이력, 주문 이력, 쿠폰 이력)를 통해 각 작업의 변경 사항을 추적 가능.
+
+### 연관 관계
+
+- 사용자(tb_user)는 지갑(tb_wallet), 주문(tb_order), 쿠폰 이력(tb_coupon_history)과 연관.
+- 지갑 이력(tb_wallet_history)은 지갑(tb_wallet)과 다대일 관계.
+- 주문(tb_order)은 상품(tb_product), 쿠폰(tb_coupon), 결제(tb_payment)와 연관.
+
+### 주요 제약 사항
+
+- 쿠폰은 한 사용자가 한 번만 발급 가능(tb_coupon_history.user_id + coupon_id 유니크).
+- 상품 재고(tb_product.stock_quantity) 감소는 결제 성공 시 처리.
