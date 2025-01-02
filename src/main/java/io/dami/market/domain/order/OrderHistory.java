@@ -25,11 +25,14 @@ public class OrderHistory {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
+    @Enumerated(EnumType.STRING)
     @Comment("주문 상태 (예: 대기, 완료, 실패)")
     @Column(name = "status", nullable = false)
-    private String status;
+    private Order.OrderStatus status;
 
     @Comment("상태 변경 일시")
     @Column(name = "changed_at", nullable = false)
     private LocalDateTime changedAt;
+
 }
+

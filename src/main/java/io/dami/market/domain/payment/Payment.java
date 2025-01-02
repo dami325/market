@@ -32,11 +32,16 @@ public class Payment extends Auditor {
     private String paymentMethod;
 
     @Comment("결제 상태 (예: 성공, 실패)")
+    @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", nullable = false)
-    private String paymentStatus;
+    private PaymentStatue paymentStatus;
 
     @Comment("결제 금액")
     @Column(name = "amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
+    public enum PaymentStatue {
+        SUCCESS,
+        FAIL
+    }
 }

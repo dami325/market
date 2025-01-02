@@ -48,7 +48,18 @@ public class Order extends Auditor {
     private BigDecimal totalPrice;
 
     @Comment("주문 상태 (예: 대기, 완료, 실패)")
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private String status;
+    private OrderStatus status;
 
+    @Getter
+    @RequiredArgsConstructor
+    public enum OrderStatus {
+        OUT_OF_STOCK("재고 소진 대기"),
+        PENDING_PAYMENT("결제 대기"),
+        PAYMENT_SUCCESS("결제 완료"),
+        ORDER_CANCELLED("주문 취소");
+
+        private final String description;
+    }
 }

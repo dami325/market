@@ -30,7 +30,7 @@ public class Coupon extends Auditor {
     @Column(name = "discount_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal discountAmount;
 
-    @Comment("쿠폰 발행 총 수량")
+    @Comment("쿠폰 총 수량")
     @Column(name = "total_quantity", nullable = false)
     private Integer totalQuantity;
 
