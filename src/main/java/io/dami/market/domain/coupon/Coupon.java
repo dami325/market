@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @AllArgsConstructor
-@Table(name = "tb_coupon")
+@Table(name = "coupon")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Coupon extends Auditor {
 

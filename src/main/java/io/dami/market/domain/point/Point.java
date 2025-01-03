@@ -1,4 +1,4 @@
-package io.dami.market.domain.wallet;
+package io.dami.market.domain.point;
 
 import io.dami.market.domain.Auditor;
 import io.dami.market.domain.user.User;
@@ -7,15 +7,14 @@ import lombok.*;
 import org.hibernate.annotations.Comment;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Builder
 @AllArgsConstructor
-@Table(name = "tb_wallet")
+@Table(name = "point")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Wallet extends Auditor {
+public class Point extends Auditor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
