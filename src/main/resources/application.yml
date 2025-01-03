@@ -1,0 +1,35 @@
+server:
+  port: 8080
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:13306/market?characterEncoding=UTF-8&serverTimezone=UTC
+    username: dami
+    password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+        default_batch_fetch_size: 100
+    open-in-view: false
+
+springdoc:
+  packages-to-scan: io.dami.market
+  default-consumes-media-type: application/json;charset=UTF-8
+  default-produces-media-type: application/json;charset=UTF-8
+  cache:
+    disabled: true # 운영에서는 false(캐시사용)으로 성능을 최적화 하는것이 일반적
+  api-docs:
+    path: /api-docs/json
+    groups:
+      enabled: false
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: / # 여기로 오면 스웨거로 리다이렉트 시켜줍니다.
+    tags-sorter: alpha
+    operations-sorter: alpha
+  show-login-endpoint: true # 로그인 앤드포인트 노출 디폴트 false
