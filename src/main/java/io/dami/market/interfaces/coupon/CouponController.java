@@ -1,5 +1,8 @@
 package io.dami.market.interfaces.coupon;
+import io.dami.market.interfaces.advice.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +39,7 @@ public class CouponController {
     @Operation(summary = "선착순 쿠폰 발급",description = "사용자 식별자와 쿠폰 식별자로 선착순 쿠폰을 발급합니다. 이미 발급한 쿠폰은 발급할 수 없습니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "쿠폰 발행 성공"),
-            @ApiResponse(responseCode = "409", description = "이미 발급한 쿠폰입니다.")
+            @ApiResponse(responseCode = "409", description = "이미 발급한 쿠폰입니다.",content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping("/{couponId}")
     public ResponseEntity<Void> couponIssued(@PathVariable Long couponId, @RequestParam Long userId) {

@@ -1,6 +1,9 @@
 package io.dami.market.interfaces.order;
 
+import io.dami.market.interfaces.advice.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +26,8 @@ public class OrderController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "주문 성공, 결제 성공"),
             @ApiResponse(responseCode = "202", description = "주문 성공, 결제 실패"),
-            @ApiResponse(responseCode = "400", description = "파라미터 오류"),
-            @ApiResponse(responseCode = "422", description = "유효하지 않은 할인 쿠폰"),
+            @ApiResponse(responseCode = "400", description = "파라미터 오류",content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "422", description = "유효하지 않은 할인 쿠폰",content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
     @PostMapping
     public ResponseEntity<Void> doOrder(@RequestBody OrderRequest.OrderCreate request) {
