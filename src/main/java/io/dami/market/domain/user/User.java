@@ -9,7 +9,7 @@ import org.hibernate.annotations.Comment;
 @Getter
 @Builder
 @AllArgsConstructor
-@Table(name = "tb_user")
+@Table(name = "user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends Auditor {
 

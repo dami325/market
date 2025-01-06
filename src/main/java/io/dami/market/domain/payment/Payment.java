@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Getter
 @Builder
 @AllArgsConstructor
-@Table(name = "tb_payment")
+@Table(name = "payment")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Payment extends Auditor {
 
@@ -27,7 +27,7 @@ public class Payment extends Auditor {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @Comment("결제 방법 (예: 지갑결제)")
+    @Comment("결제 방법 (예: 포인트 결제)")
     @Column(name = "payment_method", nullable = false)
     private String paymentMethod;
 
@@ -39,6 +39,10 @@ public class Payment extends Auditor {
     @Comment("결제 금액")
     @Column(name = "amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
+
+    @Comment("결제 실패 원인")
+    @Column(name = "failure_reason", length = 255)
+    private String failureReason;
 
     public enum PaymentStatue {
         SUCCESS,

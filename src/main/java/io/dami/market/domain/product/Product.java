@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @Getter
 @Builder
 @AllArgsConstructor
-@Table(name = "tb_product")
+@Table(name = "product")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends Auditor {
 

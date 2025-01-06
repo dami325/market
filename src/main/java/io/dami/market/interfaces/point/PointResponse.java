@@ -1,8 +1,8 @@
-package io.dami.market.interfaces.wallet;
+package io.dami.market.interfaces.point;
 
 import java.math.BigDecimal;
 
-public record WalletResponse() {
+public record PointResponse() {
 
 
     public record WalletDetails(

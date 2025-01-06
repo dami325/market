@@ -1,4 +1,4 @@
-package io.dami.market.domain.wallet;
+package io.dami.market.domain.point;
 
 import io.dami.market.domain.Auditor;
 import jakarta.persistence.*;
@@ -11,9 +11,9 @@ import java.math.BigDecimal;
 @Getter
 @Builder
 @AllArgsConstructor
-@Table(name = "tb_wallet_history")
+@Table(name = "point_history")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WalletHistory extends Auditor {
+public class PointHistory extends Auditor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,7 +24,7 @@ public class WalletHistory extends Auditor {
     @Comment("지갑 ID (외래 키)")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wallet_id", nullable = false)
-    private Wallet wallet;
+    private Point point;
 
     @Comment("거래 금액")
     @Column(name = "amount", nullable = false, precision = 10, scale = 2)
