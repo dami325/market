@@ -6,16 +6,15 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Builder
 @AllArgsConstructor
-@Table(name = "coupon_history")
+@Table(name = "issued_coupon")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CouponHistory extends Auditor {
+public class IssuedCoupon extends Auditor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

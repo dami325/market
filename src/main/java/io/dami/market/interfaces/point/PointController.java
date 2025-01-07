@@ -26,9 +26,9 @@ public class PointController {
             @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
     @GetMapping
-    public ResponseEntity<PointResponse.WalletDetails> getBalance(@RequestParam Long userId) {
+    public ResponseEntity<PointResponse.PointDetails> getBalance(@RequestParam Long userId) {
 
-        return ResponseEntity.ok(new PointResponse.WalletDetails(userId, new BigDecimal("1000")));
+        return ResponseEntity.ok(new PointResponse.PointDetails(userId, new BigDecimal("1000")));
     }
 
     @Operation(summary = "잔액 충전 API", description = "사용자의 식별자와 충전할 금액을 받아 해당 사용자의 잔액을 충전합니다.")
@@ -38,7 +38,7 @@ public class PointController {
             @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
     @PostMapping
-    public ResponseEntity<PointResponse.WalletDetails> chargeWallet(@RequestBody PointRequest.ChargeWallet request) {
+    public ResponseEntity<PointResponse.PointDetails> chargeWallet(@RequestBody PointRequest.ChargeWallet request) {
 
         return ResponseEntity.ok(null);
     }

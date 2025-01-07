@@ -156,3 +156,6 @@ end
 
 - 쿠폰은 한 사용자가 한 번만 발급 가능(tb_coupon_history.user_id + coupon_id 유니크).
 - 상품 재고(tb_product.stock_quantity) 감소는 결제 성공 시 처리.
+
+# API Swagger
+![img.png](api-swagger.png)
