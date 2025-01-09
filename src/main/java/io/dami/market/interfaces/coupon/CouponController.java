@@ -12,8 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -29,9 +27,9 @@ public class CouponController {
             @ApiResponse(responseCode = "200", description = "선착순 쿠폰 조회 성공")
     })
     @GetMapping
-    public ResponseEntity<List<CouponResponse.CouponDetails>> getCouponDetails(@RequestParam Long userId) {
+    public ResponseEntity<List<CouponResponse.CouponDetails>> getFirstServedCoupons(@RequestParam Long userId) {
 
-        List<CouponResponse.CouponDetails> response = couponService.getCoupons(userId).stream()
+        List<CouponResponse.CouponDetails> response = couponService.getFirstServedCoupons(userId).stream()
                 .map(CouponResponse.CouponDetails::new)
                 .toList();
 
