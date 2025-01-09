@@ -18,8 +18,6 @@ public record ProductResponse(
             BigDecimal price,
             @Schema(example = "15")
             Integer stockQuantity,
-            @Schema(example = "1")
-            int rank,
             @Schema(example = "500")
             int total_quantity_sold
     ) {

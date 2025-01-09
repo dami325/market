@@ -14,6 +14,7 @@ import java.util.List;
 public class ProductRepositoryImpl implements ProductRepository {
 
     private final ProductJpaRepository productJpaRepository;
+    private final ProductQuerydslRepository querydslRepository;
 
     @Override
     public Product getProduct(Long productId) {
@@ -23,17 +24,17 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     public List<Product> getProducts(Pageable pageable) {
-        return List.of();
+        return querydslRepository.getProducts(pageable);
     }
 
     @Override
-    public Long getProductsCount(Pageable pageable) {
-        return 0L;
+    public Long getProductsCount() {
+        return querydslRepository.getProductsCount();
     }
 
     @Override
     public List<ProductResponse.Top5ProductDetails> getProductsTop5() {
-        return List.of();
+        return querydslRepository.getProductsTop5();
     }
 
     @Override

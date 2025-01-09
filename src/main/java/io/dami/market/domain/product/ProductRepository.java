@@ -12,7 +12,7 @@ public interface ProductRepository {
 
     List<Product> getProducts(Pageable pageable);
 
-    Long getProductsCount(Pageable pageable);
+    Long getProductsCount();
 
     List<ProductResponse.Top5ProductDetails> getProductsTop5();
 
