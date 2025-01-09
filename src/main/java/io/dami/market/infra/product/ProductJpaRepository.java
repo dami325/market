@@ -11,6 +11,6 @@ import java.util.List;
 public interface ProductJpaRepository extends JpaRepository<Product, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT p FROM Product p WHERE p.id IN :ids")
+    @Query("SELECT p FROM Product p WHERE p.id IN :orderProductIds")
     List<Product> findAllByIdWithLock(List<Long> orderProductIds);
 }

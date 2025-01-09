@@ -17,7 +17,8 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     public Product getProduct(Long productId) {
-        return null;
+        return productJpaRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지않은 상품"));
     }
 
     @Override
@@ -37,6 +38,11 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     public void findAllByIdWithLock(List<Long> orderProductIds) {
-        List<Product> lockedProducts = productJpaRepository.findAllByIdWithLock(orderProductIds);
+        productJpaRepository.findAllByIdWithLock(orderProductIds);
+    }
+
+    @Override
+    public Product save(Product product) {
+        return productJpaRepository.save(product);
     }
 }

@@ -18,4 +18,5 @@ public interface ProductRepository {
 
     void findAllByIdWithLock(List<Long> orderProductIds);
 
+    Product save(Product productA);
 }
