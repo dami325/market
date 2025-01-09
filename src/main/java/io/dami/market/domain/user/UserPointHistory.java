@@ -1,4 +1,4 @@
-package io.dami.market.domain.point;
+package io.dami.market.domain.user;
 
 import io.dami.market.domain.Auditor;
 import jakarta.persistence.*;
@@ -11,20 +11,18 @@ import java.math.BigDecimal;
 @Getter
 @Builder
 @AllArgsConstructor
-@Table(name = "point_history")
+@Table(name = "user_point_history")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PointHistory extends Auditor {
+public class UserPointHistory extends Auditor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Comment("지갑 이력 고유 ID")
     @Column(name = "id")
     private Long id;
 
-    @Comment("지갑 ID (외래 키)")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wallet_id", nullable = false)
-    private Point point;
+    private UserPoint userPoint;
 
     @Comment("거래 금액")
     @Column(name = "amount", nullable = false, precision = 10, scale = 2)

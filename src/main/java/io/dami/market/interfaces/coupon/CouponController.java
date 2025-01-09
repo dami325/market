@@ -1,4 +1,5 @@
 package io.dami.market.interfaces.coupon;
+import io.dami.market.application.coupon.CouponService;
 import io.dami.market.interfaces.advice.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -21,6 +22,8 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/coupons")
 public class CouponController {
 
+    private final CouponService couponService;
+
     @Operation(summary = "발급 가능 선착순 쿠폰 조회",description = "사용자 식별자로 발급 가능한 쿠폰을 조회합니다. 이미 발급한 쿠폰은 발급할 수 없습니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "선착순 쿠폰 조회 성공")
@@ -28,12 +31,11 @@ public class CouponController {
     @GetMapping
     public ResponseEntity<List<CouponResponse.CouponDetails>> getCouponDetails(@RequestParam Long userId) {
 
-        return ResponseEntity.ok(
-                List.of(
-                        new CouponResponse.CouponDetails(1L, "새해 맞이 쿠폰", new BigDecimal("5000"), 10, 0, LocalDateTime.now(), LocalDateTime.now().plusDays(3)),
-                        new CouponResponse.CouponDetails(2L, "이벤트 쿠폰", new BigDecimal("3000"), 20, 0, LocalDateTime.now(), LocalDateTime.now().plusDays(5))
-                )
-        );
+        List<CouponResponse.CouponDetails> response = couponService.getCoupons(userId).stream()
+                .map(CouponResponse.CouponDetails::new)
+                .toList();
+
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "선착순 쿠폰 발급",description = "사용자 식별자와 쿠폰 식별자로 선착순 쿠폰을 발급합니다. 이미 발급한 쿠폰은 발급할 수 없습니다.")
@@ -42,7 +44,8 @@ public class CouponController {
             @ApiResponse(responseCode = "409", description = "이미 발급한 쿠폰입니다.",content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping("/{couponId}")
-    public ResponseEntity<Void> couponIssued(@PathVariable Long couponId, @RequestParam Long userId) {
+    public ResponseEntity<Void> issueACoupon(@PathVariable Long couponId, @RequestParam Long userId) {
+        couponService.issueACoupon(couponId,userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

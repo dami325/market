@@ -1,20 +1,21 @@
-package io.dami.market.domain.coupon;
+package io.dami.market.domain.user;
 
 import io.dami.market.domain.Auditor;
-import io.dami.market.domain.user.User;
+import io.dami.market.domain.coupon.Coupon;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Builder
 @AllArgsConstructor
-@Table(name = "issued_coupon")
+@Table(name = "user_coupon")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class IssuedCoupon extends Auditor {
+public class UserCoupon extends Auditor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,4 +40,17 @@ public class IssuedCoupon extends Auditor {
     @Comment("쿠폰 사용 일시")
     @Column(name = "used_at")
     private LocalDateTime usedAt;
+
+    public void check(){
+        if (usedAt != null) {
+            throw new IllegalArgumentException("사용한 쿠폰입니다.");
+        }
+        this.coupon.checkDate();
+    }
+
+    public BigDecimal useCoupon() {
+        check();
+        this.usedAt = LocalDateTime.now();
+        return this.coupon.getDiscountAmount();
+    }
 }

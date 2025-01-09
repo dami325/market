@@ -1,5 +1,7 @@
 package io.dami.market.interfaces.order;
 
+import io.dami.market.application.order.OrderFacade;
+import io.dami.market.application.order.OrderService;
 import io.dami.market.interfaces.advice.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -8,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/orders")
 public class OrderController {
+
+    private final OrderFacade orderFacade;
 
     @Operation(summary = "주문 하기", description = """
             사용자 식별자와 상품 수량 목록을 입력받아 주문하고 결제를 수행합니다.
@@ -30,8 +35,8 @@ public class OrderController {
             @ApiResponse(responseCode = "422", description = "유효하지 않은 할인 쿠폰",content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
     @PostMapping
-    public ResponseEntity<Void> doOrder(@RequestBody OrderRequest.OrderCreate request) {
-
-        return ResponseEntity.ok(null);
+    public ResponseEntity<Void> createOrder(@RequestBody OrderRequest.CreateOrder request) {
+        orderFacade.createOrder(request.toCommand());
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

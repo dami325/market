@@ -1,5 +1,7 @@
 package io.dami.market.interfaces.product;
 
+import com.querydsl.core.annotations.QueryProjection;
+import io.dami.market.domain.product.Product;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.math.BigDecimal;
@@ -21,6 +23,8 @@ public record ProductResponse(
             @Schema(example = "500")
             int total_quantity_sold
     ) {
+        @QueryProjection
+        public Top5ProductDetails {}
     }
 
     public record ProductDetails(
@@ -33,5 +37,8 @@ public record ProductResponse(
             @Schema(example = "3")
             Integer stockQuantity
     ) {
+        public ProductDetails(Product product) {
+            this(product.getId(), product.getName(), product.getPrice(), product.getStockQuantity());
+        }
     }
 }

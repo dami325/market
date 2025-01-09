@@ -33,4 +33,11 @@ public class Product extends Auditor {
     @Column(name = "stock_quantity", nullable = false)
     private Integer stockQuantity;
 
+    public BigDecimal getTotalPrice(int quantity) {
+        return this.price.multiply(BigDecimal.valueOf(quantity));
+    }
+
+    public void subtractStock(Integer quantity) {
+        this.stockQuantity -= quantity;
+    }
 }
