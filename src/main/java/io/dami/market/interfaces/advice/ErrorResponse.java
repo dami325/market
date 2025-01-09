@@ -1,7 +1,11 @@
 package io.dami.market.interfaces.advice;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 public record ErrorResponse(
-        int status,
+        @Schema(example = "XXX_EXCEPTION")
         String errorCode,
-        String message)
-{}
+        @Schema(example = "유효하지 않습니다.")
+        String message
+) {
+}

@@ -1,5 +1,6 @@
 package io.dami.market.interfaces.point;
 
+import io.dami.market.application.point.PointService;
 import io.dami.market.interfaces.advice.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,13 +12,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/point")
 public class PointController {
+
+    private final PointService pointService;
 
     @Operation(summary = "잔액 조회 API", description = "사용자의 식별자를 통해 해당 사용자의 잔액을 조회합니다.")
     @ApiResponses(value = {
@@ -26,9 +27,9 @@ public class PointController {
             @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
     @GetMapping
-    public ResponseEntity<PointResponse.WalletDetails> getBalance(@RequestParam Long userId) {
+    public ResponseEntity<PointResponse.PointDetails> getBalance(@RequestParam Long userId) {
 
-        return ResponseEntity.ok(new PointResponse.WalletDetails(userId, new BigDecimal("1000")));
+        return ResponseEntity.ok(new PointResponse.PointDetails(pointService.getBalance(userId)));
     }
 
     @Operation(summary = "잔액 충전 API", description = "사용자의 식별자와 충전할 금액을 받아 해당 사용자의 잔액을 충전합니다.")
@@ -38,8 +39,8 @@ public class PointController {
             @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
     @PostMapping
-    public ResponseEntity<PointResponse.WalletDetails> chargeWallet(@RequestBody PointRequest.ChargeWallet request) {
-
+    public ResponseEntity<PointResponse.PointDetails> chargePoint(@RequestBody PointRequest.ChargeWallet request) {
+        pointService.chargePoint(request.userId(), request.amount());
         return ResponseEntity.ok(null);
     }
 

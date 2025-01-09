@@ -1,5 +1,7 @@
 package io.dami.market.interfaces.user;
 
+import io.dami.market.application.user.UserService;
+import io.dami.market.domain.coupon.Coupon;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -21,18 +23,17 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/users")
 public class UserController {
 
-    @Operation(summary = "보유 쿠폰 조회", description = "사용자 식별자로 보유 쿠폰 리스트를 조회합니다.")
+    private final UserService userService;
+
+    @Operation(summary = "사용자 쿠폰 조회", description = "사용자 식별자로 보유 쿠폰 리스트를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "쿠폰 조회 성공")
     })
     @GetMapping("/{userId}/coupons")
-    public ResponseEntity<List<UserResponse.UserCoupon>> userCoupons(@PathVariable Long userId) {
-
-        return ResponseEntity.ok(
-                List.of(
-                        new UserResponse.UserCoupon(1L, "새해 맞이 쿠폰", new BigDecimal("5000"), LocalDateTime.now(), LocalDateTime.now().plusDays(3), LocalDateTime.now()),
-                        new UserResponse.UserCoupon(2L, "이벤트 쿠폰", new BigDecimal("3000"), LocalDateTime.now(), LocalDateTime.now().plusDays(5), LocalDateTime.now())
-                )
-        );
+    public ResponseEntity<List<UserResponse.UserCouponDetails>> userCoupons(@PathVariable Long userId) {
+        List<UserResponse.UserCouponDetails> response = userService.getUserCoupons(userId).stream()
+                .map(UserResponse.UserCouponDetails::new)
+                .toList();
+        return ResponseEntity.ok(response);
     }
 }

@@ -1,9 +1,7 @@
 package io.dami.market.domain.order;
 
 import io.dami.market.domain.Auditor;
-import io.dami.market.domain.coupon.Coupon;
 import io.dami.market.domain.product.Product;
-import io.dami.market.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
@@ -34,11 +32,6 @@ public class OrderDetail extends Auditor {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Comment("쿠폰 ID (외래 키, 선택)")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "coupon_id")
-    private Coupon coupon;
-
     @Comment("주문 수량")
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
@@ -47,5 +40,14 @@ public class OrderDetail extends Auditor {
     @Column(name = "total_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalPrice;
 
+    public boolean isInvalid(){
+        if (this.quantity.compareTo(this.product.getStockQuantity()) > 0) {
+            return true;
+        }
+        return false;
+    }
 
+    public void productStockSubtract(){
+        this.product.subtractStock(this.quantity);
+    }
 }
