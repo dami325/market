@@ -1,7 +1,6 @@
 package io.dami.market.infra.order;
 
 import io.dami.market.domain.order.Order;
-import io.dami.market.domain.order.OrderDetail;
 import io.dami.market.domain.order.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -14,12 +13,7 @@ public class OrderRepositoryImpl implements OrderRepository {
 
     @Override
     public Order save(Order order) {
-        return null;
-    }
-
-    @Override
-    public Order save(OrderDetail order) {
-        return null;
+        return orderJpaRepository.save(order);
     }
 
     @Override

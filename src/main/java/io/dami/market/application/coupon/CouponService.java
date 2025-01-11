@@ -18,14 +18,14 @@ public class CouponService {
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    public List<Coupon> getCoupons(Long userId) {
+    public List<Coupon> getFirstServedCoupons(Long userId) {
         userRepository.getUser(userId);
         return couponRepository.getFirstServedCoupons(userId);
     }
 
     @Transactional
     public void issueACoupon(Long couponId, Long userId) {
-        Coupon coupon = couponRepository.getCoupon(couponId);
+        Coupon coupon = couponRepository.getCouponWithLock(couponId);
         User user = userRepository.getUser(userId);
         coupon.issue(user);
     }

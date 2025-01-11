@@ -41,7 +41,7 @@ public class UserCoupon extends Auditor {
     @Column(name = "used_at")
     private LocalDateTime usedAt;
 
-    public void check(){
+    public void check() {
         if (usedAt != null) {
             throw new IllegalArgumentException("사용한 쿠폰입니다.");
         }

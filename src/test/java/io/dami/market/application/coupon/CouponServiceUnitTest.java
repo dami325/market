@@ -38,7 +38,7 @@ class CouponServiceUnitTest {
         when(couponRepository.getFirstServedCoupons(userId)).thenReturn(coupons);
 
         //when
-        List<Coupon> result = couponService.getCoupons(userId);
+        List<Coupon> result = couponService.getFirstServedCoupons(userId);
 
         //then
         verify(couponRepository, times(1)).getFirstServedCoupons(userId);
@@ -56,7 +56,7 @@ class CouponServiceUnitTest {
         Coupon coupon = CouponFixture.coupon("새해맞이쿠폰", totalQuantity, issuedQuantity);
         User user = UserFixture.user("박주닮");
 
-        when(couponRepository.getCoupon(couponId)).thenReturn(coupon);
+        when(couponRepository.getCouponWithLock(couponId)).thenReturn(coupon);
         when(userRepository.getUser(userId)).thenReturn(user);
 
         // when & then
@@ -74,7 +74,7 @@ class CouponServiceUnitTest {
         Coupon coupon = CouponFixture.coupon("새해맞이쿠폰", endDate);
         User user = UserFixture.user("박주닮");
 
-        when(couponRepository.getCoupon(couponId)).thenReturn(coupon);
+        when(couponRepository.getCouponWithLock(couponId)).thenReturn(coupon);
         when(userRepository.getUser(userId)).thenReturn(user);
 
         // when & then
@@ -91,7 +91,7 @@ class CouponServiceUnitTest {
         Coupon coupon = CouponFixture.coupon("새해맞이쿠폰");
         User user = UserFixture.user("박주닮");
 
-        when(couponRepository.getCoupon(couponId)).thenReturn(coupon);
+        when(couponRepository.getCouponWithLock(couponId)).thenReturn(coupon);
         when(userRepository.getUser(userId)).thenReturn(user);
 
         // when & then
@@ -112,7 +112,7 @@ class CouponServiceUnitTest {
         User user = UserFixture.user("박주닮");
         int issuedQuantity = coupon.getIssuedQuantity(); // 발급 전 수량
 
-        when(couponRepository.getCoupon(couponId)).thenReturn(coupon);
+        when(couponRepository.getCouponWithLock(couponId)).thenReturn(coupon);
         when(userRepository.getUser(userId)).thenReturn(user);
 
         // when

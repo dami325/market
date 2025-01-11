@@ -35,7 +35,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProducts(PageRequest.of(page, 10)));
     }
 
-    @Operation(summary = "상품 상세 정보 조회 API", description = "최근 3일간 가장 많이 팔린 상위 5개 상품 정보 제공")
+    @Operation(summary = "상품 상세 정보 조회 API")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "상품 조회 성공"),
             @ApiResponse(responseCode = "404", description = "상품 조회 실패",content = @Content(schema = @Schema(implementation = ErrorResponse.class)))

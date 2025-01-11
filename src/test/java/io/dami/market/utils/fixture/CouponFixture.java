@@ -28,6 +28,16 @@ public record CouponFixture() {
                 .build();
     }
 
+    public static Coupon coupon(String name,BigDecimal discountAmount){
+        return Coupon.builder()
+                .name(name)
+                .discountAmount(discountAmount)
+                .totalQuantity(10)
+                .issuedQuantity(0)
+                .endDate(LocalDateTime.now().plusDays(5))
+                .build();
+    }
+
     public static Coupon coupon(String name,LocalDateTime endDate){
         return Coupon.builder()
                 .name(name)

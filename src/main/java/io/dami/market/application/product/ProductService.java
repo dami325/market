@@ -26,7 +26,7 @@ public class ProductService {
                 .map(ProductResponse.ProductDetails::new)
                 .toList();
 
-        Long total = productRepository.getProductsCount(pageable);
+        Long total = productRepository.getProductsCount();
 
         return new PageImpl<>(content,pageable,total);
     }
