@@ -1,6 +1,6 @@
 package io.dami.market.infra.dataplatform;
 
-import io.dami.market.domain.order.DataPlatform;
+import io.dami.market.application.dataplatform.DataPlatform;
 import io.dami.market.domain.order.Order;
 import io.dami.market.domain.payment.Payment;
 import lombok.extern.slf4j.Slf4j;

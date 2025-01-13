@@ -1,7 +1,7 @@
 package io.dami.market.application.order;
 
 import io.dami.market.application.payment.PaymentService;
-import io.dami.market.domain.order.DataPlatform;
+import io.dami.market.application.dataplatform.DataPlatform;
 import io.dami.market.domain.order.Order;
 import io.dami.market.domain.order.OrderCommand;
 import io.dami.market.domain.payment.Payment;
