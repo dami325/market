@@ -21,7 +21,7 @@ public class UserPointHistory extends Auditor {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "wallet_id", nullable = false)
+    @JoinColumn(name = "user_point_id", nullable = false)
     private UserPoint userPoint;
 
     @Comment("거래 금액")
