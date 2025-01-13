@@ -292,5 +292,5 @@ erDiagram
 
 <details>
 <summary>API Swagger</summary>
-![api-swagger.png](api-swagger.png)
+![api-swagger](https://github.com/user-attachments/assets/6a4419d8-09c0-4696-b537-32e878e031a8)
 </details>
