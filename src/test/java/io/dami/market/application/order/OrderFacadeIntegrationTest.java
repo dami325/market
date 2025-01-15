@@ -6,6 +6,7 @@ import io.dami.market.domain.order.Order;
 import io.dami.market.domain.order.OrderCommand;
 import io.dami.market.domain.payment.Payment;
 import io.dami.market.domain.product.Product;
+import io.dami.market.domain.product.ProductIsOutOfStock;
 import io.dami.market.domain.product.ProductRepository;
 import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;
@@ -100,6 +101,7 @@ class OrderFacadeIntegrationTest extends IntegrationServiceTest {
 
         // when
         Assertions.assertThatThrownBy(() -> orderFacade.createOrder(command), "주문 결제 재고 없어서 실패")
+                .isInstanceOf(ProductIsOutOfStock.class)
                 .hasMessageContaining("재고가 부족합니다");
 
     }

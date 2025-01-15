@@ -3,6 +3,7 @@ package io.dami.market.infra.coupon;
 import io.dami.market.domain.coupon.Coupon;
 import io.dami.market.domain.coupon.CouponRepository;
 import io.dami.market.domain.user.UserCoupon;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -37,6 +38,6 @@ public class CouponRepositoryImpl implements CouponRepository {
     @Override
     public Coupon getCouponWithLock(Long couponId) {
         return couponJpaRepository.findByIdWithLock(couponId)
-                .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없음"));
+                .orElseThrow(() -> new EntityNotFoundException("쿠폰을 찾을 수 없음"));
     }
 }

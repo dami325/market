@@ -3,6 +3,7 @@ package io.dami.market.infra.product;
 import io.dami.market.domain.product.Product;
 import io.dami.market.domain.product.ProductRepository;
 import io.dami.market.interfaces.product.ProductResponse;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -20,7 +21,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public Product getProduct(Long productId) {
         return productJpaRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("유효하지않은 상품"));
+                .orElseThrow(() -> new EntityNotFoundException("유효하지않은 상품"));
     }
 
     @Override
@@ -52,7 +53,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     public List<Product> getAllById(Set<Long> productIds) {
         List<Product> products = productJpaRepository.findAllById(productIds);
         if (products.size() != productIds.size()) {
-            throw new IllegalArgumentException("일부 상품이 존재하지 않습니다.");
+            throw new EntityNotFoundException("일부 상품이 존재하지 않습니다.");
         }
         return products;
     }
