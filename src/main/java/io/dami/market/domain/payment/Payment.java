@@ -2,16 +2,14 @@ package io.dami.market.domain.payment;
 
 import io.dami.market.domain.Auditor;
 import io.dami.market.domain.order.Order;
-import io.dami.market.domain.order.OrderDetail;
-import io.dami.market.domain.payment.exception.PointNotEnoughException;
-import io.dami.market.domain.user.User;
-import io.dami.market.domain.user.UserPoint;
+import io.dami.market.domain.user.UserCoupon;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
 import java.math.BigDecimal;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -35,46 +33,40 @@ public class Payment extends Auditor {
     @Column(name = "payment_status")
     private PaymentStatue paymentStatus;
 
-    @Comment("결제 금액")
+    @Comment("최종 결제 금액")
     @Column(name = "amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
-    @Comment("결제 실패 원인")
-    @Column(name = "failure_reason", length = 255)
-    private PaymentFailureReason failureReason;
+    @Comment("할인 받은 금액")
+    @Column(name = "discount_amount", precision = 10, scale = 2)
+    private BigDecimal discountAmount = BigDecimal.ZERO;
 
-    public void pay() {
-        User user = this.order.getUser();
-        UserPoint userPoint = user.getUserPoint();
-        if (this.amount.compareTo(userPoint.getBalance()) > 0) {
-            this.paymentStatus = PaymentStatue.FAIL;
-            this.order.updateOrderStatus(Order.OrderStatus.PENDING_PAYMENT);
-            this.failureReason = PaymentFailureReason.NOT_ENOUGH_POINTS;
-            return;
-        }
-        else if(order.isInvalidProductQuantity()){
-            this.paymentStatus = PaymentStatue.FAIL;
-            this.order.updateOrderStatus(Order.OrderStatus.OUT_OF_STOCK);
-            this.failureReason = PaymentFailureReason.NOT_ENOUGH_PRODUCT_QUANTITY;
-            return;
-        }
-
-        order.getOrderDetails().forEach(OrderDetail::productStockSubtract); // 재고 차감
-        userPoint.usePoint(this.amount);
-        this.paymentStatus = PaymentStatue.SUCCESS;
-        this.order.updateOrderStatus(Order.OrderStatus.PAYMENT_SUCCESS);
-    }
+    @JoinColumn(name = "user_coupon_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private UserCoupon userCoupon;
 
     public enum PaymentStatue {
         SUCCESS,
         FAIL
     }
 
-    public Payment(Order order) {
-        if (order.getStatus() == Order.OrderStatus.PAYMENT_SUCCESS) {
-            throw new IllegalArgumentException("이미 결제가 완료된 주문");
-        }
+    public Payment(Order order, UserCoupon userCoupon) {
         this.amount = order.getTotalPrice();
         this.order = order;
+        this.userCoupon = userCoupon;
+        this.paymentStatus = PaymentStatue.FAIL;
     }
+
+    public void pay() {
+        this.discountAmount = userCoupon == null ? BigDecimal.ZERO : userCoupon.useCoupon();
+        // 총 주문 금액보다 할인 금액이 큰 경우 처리
+        if (this.discountAmount.compareTo(this.amount) > 0) {
+            this.discountAmount = this.amount; // 할인 금액을 주문 총액으로 조정
+        }
+        this.amount = this.amount.subtract(this.discountAmount);
+
+        this.paymentStatus = PaymentStatue.SUCCESS;
+        this.order.updateOrderStatus(Order.OrderStatus.PAYMENT_SUCCESS);
+    }
+
 }

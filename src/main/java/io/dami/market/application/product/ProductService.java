@@ -1,5 +1,8 @@
 package io.dami.market.application.product;
 
+import io.dami.market.domain.order.Order;
+import io.dami.market.domain.order.OrderDetail;
+import io.dami.market.domain.order.OrderRepository;
 import io.dami.market.domain.product.Product;
 import io.dami.market.domain.product.ProductRepository;
 import io.dami.market.interfaces.product.ProductResponse;
@@ -40,4 +43,11 @@ public class ProductService {
     public List<ProductResponse.Top5ProductDetails> getProductsTop5() {
         return productRepository.getProductsTop5();
     }
+
+    @Transactional
+    public void quantitySubtract(Order order) {
+        productRepository.findAllByIdWithLock(order.getOrderProductIds());
+        order.getOrderDetails().forEach(OrderDetail::productStockSubtract);
+    }
+
 }

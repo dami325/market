@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -38,12 +39,22 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public void findAllByIdWithLock(List<Long> orderProductIds) {
-        productJpaRepository.findAllByIdWithLock(orderProductIds);
+    public List<Product> findAllByIdWithLock(List<Long> orderProductIds) {
+        return productJpaRepository.findAllByIdWithLock(orderProductIds);
     }
 
     @Override
     public Product save(Product product) {
         return productJpaRepository.save(product);
     }
+
+    @Override
+    public List<Product> getAllById(Set<Long> productIds) {
+        List<Product> products = productJpaRepository.findAllById(productIds);
+        if (products.size() != productIds.size()) {
+            throw new IllegalArgumentException("일부 상품이 존재하지 않습니다.");
+        }
+        return products;
+    }
+
 }

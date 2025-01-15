@@ -14,11 +14,11 @@ public record OrderRequest() {
             @NotNull
             Long userId,
             @NotEmpty
-            List<Product> products,
+            List<OrderDetails> products,
             @Schema(example = "3")
-            Long couponId
+            Long userCouponId
     ) {
-        public record Product(
+        public record OrderDetails(
                 @Schema(example = "5")
                 Long productId,
                 @Schema(example = "3")
@@ -26,12 +26,12 @@ public record OrderRequest() {
         ) {
         }
 
-        public OrderCommand.DoOrder toCommand() {
-            return new OrderCommand.DoOrder(
+        public OrderCommand.order toCommand() {
+            return new OrderCommand.order(
                     userId,
-                    couponId,
+                    userCouponId,
                     products.stream()
-                            .map(OrderCommand.Product::new)
+                            .map(OrderCommand.OrderDetails::new)
                             .toList()
             );
         }

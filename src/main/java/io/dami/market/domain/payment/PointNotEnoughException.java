@@ -1,4 +1,4 @@
-package io.dami.market.domain.payment.exception;
+package io.dami.market.domain.payment;
 
 public class PointNotEnoughException extends RuntimeException {
     public PointNotEnoughException(String message) {

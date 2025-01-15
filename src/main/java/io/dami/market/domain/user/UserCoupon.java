@@ -41,15 +41,11 @@ public class UserCoupon extends Auditor {
     @Column(name = "used_at")
     private LocalDateTime usedAt;
 
-    public void check() {
+    public BigDecimal useCoupon() {
         if (usedAt != null) {
             throw new IllegalArgumentException("사용한 쿠폰입니다.");
         }
-        this.coupon.checkDate();
-    }
-
-    public BigDecimal useCoupon() {
-        check();
+        this.coupon.checkExpiry();
         this.usedAt = LocalDateTime.now();
         return this.coupon.getDiscountAmount();
     }

@@ -22,6 +22,15 @@ public record ProductFixture() {
                 .build();
     }
 
+    public static Product product(Long id,String name, int price){
+        return Product.builder()
+                .id(id)
+                .name(name)
+                .price(BigDecimal.valueOf(price))
+                .stockQuantity(100)
+                .build();
+    }
+
     public static Product product(String name, int price, int stockQuantity){
         return Product.builder()
                 .name(name)

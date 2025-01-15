@@ -9,13 +9,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
-
 
     @Transactional(readOnly = true)
     public List<Coupon> getUserCoupons(Long userId) {
@@ -24,5 +24,10 @@ public class UserService {
                 .stream()
                 .map(UserCoupon::getCoupon)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public User getUser(Long userId) {
+        return userRepository.getUser(userId);
     }
 }

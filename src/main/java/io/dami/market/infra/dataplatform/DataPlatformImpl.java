@@ -1,6 +1,5 @@
 package io.dami.market.infra.dataplatform;
 
-import io.dami.market.application.dataplatform.DataPlatform;
 import io.dami.market.domain.order.Order;
 import io.dami.market.domain.payment.Payment;
 import lombok.extern.slf4j.Slf4j;
@@ -11,9 +10,10 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public class DataPlatformImpl implements DataPlatform {
+public class DataPlatformImpl implements DataPlatform{
 
     // 주문 정보 전송
+    @Override
     public void publish(Order order, Payment payment) {
         log.info("Publishing to Mock Data Platform. Order ID: {}, Payment ID: {}", order.getId(), payment.getId());
     }

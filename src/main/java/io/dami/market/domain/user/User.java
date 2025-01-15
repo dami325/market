@@ -49,20 +49,12 @@ public class User extends Auditor {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<UserCoupon> userCoupons = new HashSet<>();
 
-    private List<Coupon> getCoupons() {
-        return this.userCoupons.stream()
-                .map(UserCoupon::getCoupon)
-                .collect(Collectors.toSet())// 중복제거
-                .stream().toList();
+    public void usePoint(BigDecimal amount) {
+        this.userPoint.subtract(amount);
     }
 
-    public Optional<UserCoupon> findUserCoupon(Long couponId) {
-        if (couponId == null) {
-            return Optional.empty();
-        }
-        return this.userCoupons.stream()
-                .filter(userCoupon -> userCoupon.getCoupon().getId().equals(couponId))
-                .findFirst();
+    public void chargePoint(BigDecimal amount) {
+        this.userPoint.charge(amount);
     }
 
     public void addCoupon(Coupon coupon) {

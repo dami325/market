@@ -6,11 +6,22 @@ import java.util.List;
 
 public record OrderCommand() {
 
-    public record DoOrder(Long userId, Long couponId, List<Product> products) {}
+    public record order(
+            Long userId,
+            Long userCouponId,
+            List<OrderDetails> orderDetails
+    ) {
 
-    public record Product(Long productId, int quantity) {
-        public Product(OrderRequest.CreateOrder.Product product) {
-            this(product.productId(), product.quantity());
+    }
+
+    public record OrderDetails(
+            Long productId,
+            int quantity
+    ) {
+        public OrderDetails(
+                OrderRequest.CreateOrder.OrderDetails orderDetails
+        ) {
+            this(orderDetails.productId(), orderDetails.quantity());
         }
     }
 }

@@ -1,5 +1,6 @@
 package io.dami.market.application.point;
 
+import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,12 @@ public class PointService {
     @Transactional
     public void chargePoint(Long userId, BigDecimal amount) {
         userRepository.getUser(userId)
-                .getUserPoint()
                 .chargePoint(amount);
+    }
+
+    @Transactional
+    public void usePoints(Long userId, BigDecimal totalAmount) {
+        User user = userRepository.getUser(userId);
+        user.usePoint(totalAmount);
     }
 }

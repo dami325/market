@@ -2,9 +2,9 @@ package io.dami.market.domain.product;
 
 import io.dami.market.interfaces.product.ProductResponse;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ProductRepository {
 
@@ -16,7 +16,9 @@ public interface ProductRepository {
 
     List<ProductResponse.Top5ProductDetails> getProductsTop5();
 
-    void findAllByIdWithLock(List<Long> orderProductIds);
+    List<Product> findAllByIdWithLock(List<Long> orderProductIds);
 
     Product save(Product productA);
+
+    List<Product> getAllById(Set<Long> productIds);
 }

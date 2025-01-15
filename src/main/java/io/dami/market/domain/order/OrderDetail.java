@@ -40,13 +40,6 @@ public class OrderDetail extends Auditor {
     @Column(name = "total_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalPrice;
 
-    public boolean isInvalid(){
-        if (this.quantity.compareTo(this.product.getStockQuantity()) > 0) {
-            return true;
-        }
-        return false;
-    }
-
     public void productStockSubtract(){
         this.product.subtractStock(this.quantity);
     }

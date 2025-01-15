@@ -1,7 +1,6 @@
 package io.dami.market.domain.user;
 
 import io.dami.market.domain.Auditor;
-import io.dami.market.domain.payment.exception.PointNotEnoughException;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
@@ -27,11 +26,17 @@ public class UserPoint extends Auditor {
         this.balance = balance;
     }
 
-    public void usePoint(BigDecimal point) {
-        this.balance = this.balance.subtract(point);
+    public void subtract(BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return;
+        }
+        if (this.balance.compareTo(amount) < 0) {
+            throw new IllegalArgumentException("포인트 부족 사용 실패");
+        }
+        this.balance = this.balance.subtract(amount);
     }
 
-    public void chargePoint(BigDecimal amount) {
+    public void charge(BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("0 이하는 충전불가");
         }

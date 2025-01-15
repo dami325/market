@@ -1,7 +1,6 @@
 package io.dami.market.application.product;
 
 import io.dami.market.application.order.OrderFacade;
-import io.dami.market.domain.coupon.Coupon;
 import io.dami.market.domain.coupon.CouponRepository;
 import io.dami.market.domain.order.OrderCommand;
 import io.dami.market.domain.product.Product;
@@ -10,7 +9,6 @@ import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;
 import io.dami.market.interfaces.product.ProductResponse;
 import io.dami.market.utils.IntegrationServiceTest;
-import io.dami.market.utils.fixture.CouponFixture;
 import io.dami.market.utils.fixture.ProductFixture;
 import io.dami.market.utils.fixture.UserFixture;
 import org.assertj.core.api.Assertions;
@@ -20,10 +18,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.math.BigDecimal;
 import java.util.List;
 
-class ProductServiceIntegrationTest extends IntegrationServiceTest {
+class OrderDetailsServiceIntegrationTest extends IntegrationServiceTest {
 
     @Autowired
     private OrderFacade orderFacade;
@@ -83,15 +80,15 @@ class ProductServiceIntegrationTest extends IntegrationServiceTest {
         userRepository.save(user);
         int maxQuantity = 50;
         int minQuantity = 2;
-        List<OrderCommand.Product> products = List.of(
-                new OrderCommand.Product(productA.getId(), minQuantity),
-                new OrderCommand.Product(productB.getId(), 20),
-                new OrderCommand.Product(productC.getId(), 35),
-                new OrderCommand.Product(productD.getId(), 45),
-                new OrderCommand.Product(productE.getId(), maxQuantity),
-                new OrderCommand.Product(productF.getId(), 1)
+        List<OrderCommand.OrderDetails> orderDetails = List.of(
+                new OrderCommand.OrderDetails(productA.getId(), minQuantity),
+                new OrderCommand.OrderDetails(productB.getId(), 20),
+                new OrderCommand.OrderDetails(productC.getId(), 35),
+                new OrderCommand.OrderDetails(productD.getId(), 45),
+                new OrderCommand.OrderDetails(productE.getId(), maxQuantity),
+                new OrderCommand.OrderDetails(productF.getId(), 1)
         );
-        OrderCommand.DoOrder command = new OrderCommand.DoOrder(user.getId(), null, products);
+        OrderCommand.order command = new OrderCommand.order(user.getId(), null, orderDetails);
         orderFacade.createOrder(command);
 
         // when

@@ -4,7 +4,6 @@ import io.dami.market.domain.coupon.Coupon;
 import io.dami.market.domain.coupon.CouponRepository;
 import io.dami.market.domain.order.Order;
 import io.dami.market.domain.order.OrderCommand;
-import io.dami.market.domain.order.OrderRepository;
 import io.dami.market.domain.payment.Payment;
 import io.dami.market.domain.product.Product;
 import io.dami.market.domain.product.ProductRepository;
@@ -57,11 +56,11 @@ class OrderFacadeIntegrationTest extends IntegrationServiceTest {
         userRepository.save(user);
         int orderQuantity = 3;
 
-        List<OrderCommand.Product> products = List.of(
-                new OrderCommand.Product(productA.getId(), orderQuantity), // 3만원
-                new OrderCommand.Product(productB.getId(), orderQuantity) // 6만원
+        List<OrderCommand.OrderDetails> orderDetails = List.of(
+                new OrderCommand.OrderDetails(productA.getId(), orderQuantity), // 3만원
+                new OrderCommand.OrderDetails(productB.getId(), orderQuantity) // 6만원
         );
-        OrderCommand.DoOrder command = new OrderCommand.DoOrder(user.getId(), coupon.getId(), products);
+        OrderCommand.order command = new OrderCommand.order(user.getId(), coupon.getId(), orderDetails);
 
         // when
         orderFacade.createOrder(command);
@@ -77,8 +76,54 @@ class OrderFacadeIntegrationTest extends IntegrationServiceTest {
 
         // 외부 데이터 플랫폼 전송은 Publishing to Mock Data Platform. Order ID: 1, Payment ID: 1 로그로 확인
         Assertions.assertThat(order.getStatus()).isEqualTo(Order.OrderStatus.PAYMENT_SUCCESS); // 주문 상태 검증
-        Assertions.assertThat(order.getDiscountAmount().compareTo(coupon.getDiscountAmount())).isEqualTo(0); // 할인적용 검증
+        Assertions.assertThat(payment.getDiscountAmount().compareTo(coupon.getDiscountAmount())).isEqualTo(0); // 할인적용 검증
         Assertions.assertThat(payment.getPaymentStatus()).isEqualTo(Payment.PaymentStatue.SUCCESS); // 결제 상태 검증
-        Assertions.assertThat(payment.getAmount()).isEqualTo(order.getTotalPrice()); // 결제금액 검증
+        Assertions.assertThat(payment.getAmount()).isEqualTo(order.getTotalPrice().subtract(coupon.getDiscountAmount())); // 결제금액 검증
+    }
+
+    @Test
+    void 주문_결제_재고없음_실패() {
+        // given
+        Coupon coupon = couponRepository.save(CouponFixture.coupon("새해쿠폰", new BigDecimal("10000")));
+        Product productA = productRepository.save(ProductFixture.product("productA", 10000,1));
+        Product productB = productRepository.save(ProductFixture.product("productB", 20000,2));
+        User user = UserFixture.user("박주닮",90000);
+        user.addCoupon(coupon); // 주문 시 사용할 만원 할인 쿠폰 세팅
+        userRepository.save(user);
+        int orderQuantity = 3;
+
+        List<OrderCommand.OrderDetails> orderDetails = List.of(
+                new OrderCommand.OrderDetails(productA.getId(), orderQuantity), // 3만원
+                new OrderCommand.OrderDetails(productB.getId(), orderQuantity) // 6만원
+        );
+        OrderCommand.order command = new OrderCommand.order(user.getId(), coupon.getId(), orderDetails);
+
+        // when
+        Assertions.assertThatThrownBy(() -> orderFacade.createOrder(command), "주문 결제 재고 없어서 실패")
+                .hasMessageContaining("재고가 부족합니다");
+
+    }
+
+    @Test
+    void 주문_결제_포인트_없음_실패() {
+        // given
+        Coupon coupon = couponRepository.save(CouponFixture.coupon("새해쿠폰", new BigDecimal("10000")));
+        Product productA = productRepository.save(ProductFixture.product("productA", 10000));
+        Product productB = productRepository.save(ProductFixture.product("productB", 20000));
+        User user = UserFixture.user("박주닮",10000);
+        user.addCoupon(coupon); // 주문 시 사용할 만원 할인 쿠폰 세팅
+        userRepository.save(user);
+        int orderQuantity = 3;
+
+        List<OrderCommand.OrderDetails> orderDetails = List.of(
+                new OrderCommand.OrderDetails(productA.getId(), orderQuantity), // 3만원
+                new OrderCommand.OrderDetails(productB.getId(), orderQuantity) // 6만원
+        );
+        OrderCommand.order command = new OrderCommand.order(user.getId(), coupon.getId(), orderDetails);
+
+        // when
+        Assertions.assertThatThrownBy(() -> orderFacade.createOrder(command), "포인트 부족해서 실패")
+                .hasMessageContaining("포인트 부족 사용 실패");
+
     }
 }

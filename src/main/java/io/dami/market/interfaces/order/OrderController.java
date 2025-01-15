@@ -1,7 +1,6 @@
 package io.dami.market.interfaces.order;
 
 import io.dami.market.application.order.OrderFacade;
-import io.dami.market.application.order.OrderService;
 import io.dami.market.interfaces.advice.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

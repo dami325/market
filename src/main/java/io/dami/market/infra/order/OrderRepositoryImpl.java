@@ -17,8 +17,8 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public Order getOrderWithLock(Long orderId) {
-        return orderJpaRepository.getOrderWithLock(orderId)
+    public Order getOrder(Long orderId) {
+        return orderJpaRepository.getOrder(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문번호"));
     }
 

@@ -51,7 +51,7 @@ public class Coupon extends Auditor {
     private Set<UserCoupon> userCoupons = new HashSet<>();
 
     public void issue(User user) {
-        checkDate();
+        checkExpiry();
         if (user == null) {
             throw new IllegalArgumentException("유효하지 않은 사용자.");
         }
@@ -64,9 +64,9 @@ public class Coupon extends Auditor {
         user.addCoupon(this);
     }
 
-    public void checkDate(){
+    public void checkExpiry(){
         LocalDateTime now = LocalDateTime.now();
-        if (now.isAfter(endDate)) {
+        if (now.isAfter(this.endDate)) {
             throw new IllegalArgumentException("만료된 쿠폰입니다.");
         }
     }
