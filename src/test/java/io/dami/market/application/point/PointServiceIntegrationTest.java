@@ -1,5 +1,6 @@
 package io.dami.market.application.point;
 
+import io.dami.market.domain.payment.PointNotEnoughException;
 import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;
 import io.dami.market.utils.IntegrationServiceTest;
@@ -42,6 +43,17 @@ class PointServiceIntegrationTest extends IntegrationServiceTest {
         // then
         User result = userRepository.getUser(user.getId());
         Assertions.assertThat(result.getUserPoint().getBalance().compareTo(BigDecimal.valueOf(17000))).isEqualTo(0);
+    }
+
+    @Test
+    void 포인트_부족_사용_실패() {
+        // given
+        User user = userRepository.save(UserFixture.user("박주닮", 5000));
+
+        // when && then
+        Assertions.assertThatThrownBy(() -> pointService.usePoints(user.getId(), BigDecimal.valueOf(6000)), "포인트 부족 사용 실패")
+                .isInstanceOf(PointNotEnoughException.class)
+                .hasMessageContaining("포인트 부족 사용 실패");
     }
 
 }

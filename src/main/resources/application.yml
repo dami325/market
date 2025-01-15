@@ -33,3 +33,10 @@ springdoc:
     tags-sorter: alpha
     operations-sorter: alpha
   show-login-endpoint: true # 로그인 앤드포인트 노출 디폴트 false
+
+logging:
+  log-file-path: ./market/logs
+  log-file-name: market-console
+  level:
+    root: info
+    org.hibernate.orm.jdbc.bind: trace

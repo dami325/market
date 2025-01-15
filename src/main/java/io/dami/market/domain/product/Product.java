@@ -42,7 +42,7 @@ public class Product extends Auditor {
             throw new IllegalArgumentException("감소할 수량은 0이상이어야 합니다.");
         }
         if (this.stockQuantity < quantity) {
-            throw new IllegalStateException("재고가 부족합니다: " + this.id);
+            throw new ProductIsOutOfStock("재고가 부족합니다: " + this.id);
         }
         this.stockQuantity -= quantity;
     }

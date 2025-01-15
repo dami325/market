@@ -31,7 +31,8 @@ public class OrderController {
             @ApiResponse(responseCode = "200", description = "주문 성공, 결제 성공"),
             @ApiResponse(responseCode = "202", description = "주문 성공, 결제 실패"),
             @ApiResponse(responseCode = "400", description = "파라미터 오류",content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "422", description = "유효하지 않은 할인 쿠폰",content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "유효하지 않은 할인 쿠폰",content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "480", description = "포인트 부족 주문 실패",content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
     @PostMapping
     public ResponseEntity<Void> createOrder(@RequestBody OrderRequest.CreateOrder request) {
