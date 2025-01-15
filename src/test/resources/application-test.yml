@@ -11,3 +11,9 @@ spring:
         show_sql: true
         default_batch_fetch_size: 100
     open-in-view: false
+logging:
+  log-file-path: ./market/logs
+  log-file-name: market-console
+  level:
+    root: info
+    org.hibernate.orm.jdbc.bind: trace
