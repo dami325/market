@@ -1,12 +1,12 @@
 package io.dami.market.application.point;
 
 import io.dami.market.domain.payment.PointNotEnoughException;
+import io.dami.market.domain.point.PointService;
 import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;
 import io.dami.market.utils.IntegrationServiceTest;
 import io.dami.market.utils.fixture.UserFixture;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

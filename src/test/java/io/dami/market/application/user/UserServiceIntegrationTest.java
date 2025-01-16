@@ -4,6 +4,7 @@ import io.dami.market.domain.coupon.Coupon;
 import io.dami.market.domain.coupon.CouponRepository;
 import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;
+import io.dami.market.domain.user.UserService;
 import io.dami.market.utils.IntegrationServiceTest;
 import io.dami.market.utils.fixture.CouponFixture;
 import io.dami.market.utils.fixture.UserFixture;

@@ -1,4 +1,4 @@
-package io.dami.market.application.point;
+package io.dami.market.domain.point;
 
 import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;

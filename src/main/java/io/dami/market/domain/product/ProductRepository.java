@@ -4,6 +4,7 @@ import io.dami.market.interfaces.product.ProductResponse;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface ProductRepository {
@@ -16,7 +17,7 @@ public interface ProductRepository {
 
     List<ProductResponse.Top5ProductDetails> getProductsTop5();
 
-    List<Product> findAllByIdWithLock(List<Long> orderProductIds);
+    Map<Long, Product> findAllByIdWithLock(List<Long> orderProductIds);
 
     Product save(Product productA);
 

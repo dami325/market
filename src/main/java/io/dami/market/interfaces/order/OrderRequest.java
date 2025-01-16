@@ -14,9 +14,7 @@ public record OrderRequest() {
             @NotNull
             Long userId,
             @NotEmpty
-            List<OrderDetails> products,
-            @Schema(example = "3")
-            Long userCouponId
+            List<OrderDetails> products
     ) {
         public record OrderDetails(
                 @Schema(example = "5")
@@ -26,14 +24,10 @@ public record OrderRequest() {
         ) {
         }
 
-        public OrderCommand.order toCommand() {
-            return new OrderCommand.order(
-                    userId,
-                    userCouponId,
-                    products.stream()
-                            .map(OrderCommand.OrderDetails::new)
-                            .toList()
-            );
+        public List<OrderCommand.OrderDetails> toCommand() {
+            return products.stream()
+                    .map(OrderCommand.OrderDetails::new)
+                    .toList();
         }
     }
 }

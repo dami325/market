@@ -29,7 +29,7 @@ class OrderServiceIntegrationTest extends IntegrationServiceTest {
 
     @DisplayName("주문 시 결제 대기 상태로 주문 생성됨")
     @Test
-    void 주문_결제_대기_성공() {
+    void 주문_생성_결제_대기_성공() {
         // given
         User user = userRepository.save(UserFixture.user("박주닮"));
         int price = 5000;

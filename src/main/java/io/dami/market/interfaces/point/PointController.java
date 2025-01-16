@@ -1,6 +1,6 @@
 package io.dami.market.interfaces.point;
 
-import io.dami.market.application.point.PointService;
+import io.dami.market.domain.point.PointService;
 import io.dami.market.interfaces.advice.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

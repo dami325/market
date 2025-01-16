@@ -9,7 +9,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -40,8 +43,9 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public List<Product> findAllByIdWithLock(List<Long> orderProductIds) {
-        return productJpaRepository.findAllByIdWithLock(orderProductIds);
+    public Map<Long,Product> findAllByIdWithLock(List<Long> orderProductIds) {
+        return productJpaRepository.findAllByIdWithLock(orderProductIds)
+                .stream().collect(Collectors.toMap(Product::getId, Function.identity()));
     }
 
     @Override

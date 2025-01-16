@@ -1,16 +1,17 @@
-package io.dami.market.application.payment;
+package io.dami.market.domain.payment;
 
 import io.dami.market.domain.coupon.Coupon;
 import io.dami.market.domain.coupon.CouponRepository;
 import io.dami.market.domain.order.Order;
 import io.dami.market.domain.order.OrderRepository;
-import io.dami.market.domain.payment.Payment;
+import io.dami.market.domain.order.OrderService;
 import io.dami.market.domain.product.Product;
 import io.dami.market.domain.product.ProductRepository;
 import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserCoupon;
 import io.dami.market.domain.user.UserRepository;
 import io.dami.market.infra.coupon.UserCouponJpaRepository;
+import io.dami.market.infra.order.OrderJpaRepository;
 import io.dami.market.utils.IntegrationServiceTest;
 import io.dami.market.utils.fixture.*;
 import jakarta.persistence.EntityManager;
@@ -42,9 +43,6 @@ class PaymentServiceIntegrationTest extends IntegrationServiceTest {
 
     @Autowired
     private UserCouponJpaRepository userCouponJpaRepository;
-
-    @Autowired
-    private EntityManager em;
 
     @DisplayName("""
             총 주문 금액보다 할인 금액이 큰 경우
@@ -88,4 +86,6 @@ class PaymentServiceIntegrationTest extends IntegrationServiceTest {
         Assertions.assertThat(result.getPaymentStatus()).isEqualTo(Payment.PaymentStatue.SUCCESS);
         Assertions.assertThat(result.getAmount()).isEqualTo(BigDecimal.ZERO);
     }
+
+
 }

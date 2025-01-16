@@ -1,15 +1,17 @@
 package io.dami.market.application.product;
 
-import io.dami.market.application.order.OrderFacade;
-import io.dami.market.domain.coupon.CouponRepository;
+import io.dami.market.application.payment.PaymentFacade;
 import io.dami.market.domain.order.Order;
 import io.dami.market.domain.order.OrderCommand;
 import io.dami.market.domain.order.OrderRepository;
+import io.dami.market.domain.order.OrderService;
 import io.dami.market.domain.product.Product;
 import io.dami.market.domain.product.ProductIsOutOfStock;
 import io.dami.market.domain.product.ProductRepository;
+import io.dami.market.domain.product.ProductService;
 import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;
+import io.dami.market.infra.product.ProductJpaRepository;
 import io.dami.market.interfaces.product.ProductResponse;
 import io.dami.market.utils.IntegrationServiceTest;
 import io.dami.market.utils.fixture.OrderFixture;
@@ -28,7 +30,7 @@ import java.util.List;
 class ProductServiceIntegrationTest extends IntegrationServiceTest {
 
     @Autowired
-    private OrderFacade orderFacade;
+    private OrderService orderService;
 
     @Autowired
     private ProductService productService;
@@ -41,6 +43,9 @@ class ProductServiceIntegrationTest extends IntegrationServiceTest {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private PaymentFacade paymentFacade;
 
     @Test
     void 상품_리스트_조회_성공() {
@@ -93,8 +98,8 @@ class ProductServiceIntegrationTest extends IntegrationServiceTest {
                 new OrderCommand.OrderDetails(productE.getId(), maxQuantity),
                 new OrderCommand.OrderDetails(productF.getId(), 1)
         );
-        OrderCommand.order command = new OrderCommand.order(user.getId(), null, orderDetails);
-        orderFacade.createOrder(command);
+        Order order = orderService.order(user.getId(), orderDetails);
+        paymentFacade.pay(user.getId(), order.getId(), null);
 
         // when
         List<ProductResponse.Top5ProductDetails> result = productService.getProductsTop5();
