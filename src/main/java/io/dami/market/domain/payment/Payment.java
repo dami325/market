@@ -2,6 +2,8 @@ package io.dami.market.domain.payment;
 
 import io.dami.market.domain.Auditor;
 import io.dami.market.domain.order.Order;
+import io.dami.market.domain.order.OrderAlreadyCanceledException;
+import io.dami.market.domain.order.PaymentAlreadySuccessException;
 import io.dami.market.domain.user.UserCoupon;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -51,6 +53,7 @@ public class Payment extends Auditor {
     }
 
     public Payment(Order order, UserCoupon userCoupon) {
+        this.orderValidate(order);
         this.amount = order.getTotalPrice();
         this.order = order;
         this.userCoupon = userCoupon;
@@ -67,6 +70,13 @@ public class Payment extends Auditor {
 
         this.paymentStatus = PaymentStatue.SUCCESS;
         this.order.updateOrderStatus(Order.OrderStatus.PAYMENT_SUCCESS);
+    }
+
+    private void orderValidate(Order order) {
+        switch (order.getStatus()) {
+            case PAYMENT_SUCCESS -> throw new PaymentAlreadySuccessException("이미 결제가 완료된 주문입니다.");
+            case ORDER_CANCELLED -> throw new OrderAlreadyCanceledException("취소된 주문 입니다.");
+        }
     }
 
 }

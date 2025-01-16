@@ -1,4 +1,4 @@
-package io.dami.market.application.user;
+package io.dami.market.domain.user;
 
 import io.dami.market.domain.coupon.Coupon;
 import io.dami.market.domain.coupon.CouponRepository;

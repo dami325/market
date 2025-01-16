@@ -11,6 +11,7 @@ public record OrderFixture() {
     public static Order order(User user) {
         return Order.builder()
                 .user(user)
+                .status(Order.OrderStatus.PENDING_PAYMENT)
                 .build();
     }
 

@@ -1,4 +1,4 @@
-package io.dami.market.application.product;
+package io.dami.market.domain.product;
 
 import io.dami.market.application.payment.PaymentFacade;
 import io.dami.market.domain.order.Order;
@@ -26,6 +26,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 class ProductServiceIntegrationTest extends IntegrationServiceTest {
 
@@ -46,6 +49,42 @@ class ProductServiceIntegrationTest extends IntegrationServiceTest {
 
     @Autowired
     private PaymentFacade paymentFacade;
+
+    @Autowired
+    private ProductJpaRepository productJpaRepository;
+
+    @DisplayName("상품 재고 차감 10명 동시성 테스트 성공")
+    @Test
+    void 상품_재고_차감_10명_동시성_테스트_성공() throws InterruptedException {
+        // given
+        int stockQuantity = 30; // 재고 수량 세팅
+        int quantity = 3; // 3개 주문
+        Product product = productRepository.save(ProductFixture.product("좋은데이", 5000, stockQuantity));
+        User user = userRepository.save(UserFixture.user("박주닮"));
+        Order order = orderRepository.save(OrderFixture.order(user, quantity, product));
+
+        int threads = 10;
+        ExecutorService executorService = Executors.newFixedThreadPool(threads);
+        CountDownLatch latch = new CountDownLatch(threads);
+
+        // when
+        for (int i = 0; i < threads; i++) {
+            executorService.submit(() -> {
+                try {
+                    productService.quantitySubtract(order);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+        latch.await();
+        executorService.shutdown();
+
+        // then
+        Product result = productJpaRepository.findById(product.getId()).get();
+        Assertions.assertThat(result.getStockQuantity()).isEqualTo(0);
+    }
+
 
     @Test
     void 상품_리스트_조회_성공() {

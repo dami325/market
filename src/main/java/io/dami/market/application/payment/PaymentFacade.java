@@ -1,12 +1,12 @@
 package io.dami.market.application.payment;
 
 import io.dami.market.domain.coupon.CouponService;
-import io.dami.market.domain.point.PointService;
-import io.dami.market.domain.product.ProductService;
 import io.dami.market.domain.order.Order;
 import io.dami.market.domain.order.OrderService;
 import io.dami.market.domain.payment.Payment;
 import io.dami.market.domain.payment.PaymentService;
+import io.dami.market.domain.point.PointService;
+import io.dami.market.domain.product.ProductService;
 import io.dami.market.domain.user.UserCoupon;
 import io.dami.market.infra.dataplatform.DataPlatform;
 import lombok.RequiredArgsConstructor;
@@ -28,9 +28,6 @@ public class PaymentFacade {
     public void pay(Long userId, Long orderId, Long userCouponId) {
         // 주문 조회
         Order order = orderService.getOrderWithLock(orderId);
-
-        // 주문 상태 검증
-        order.validate();
 
         // 쿠폰 조회 nullable
         UserCoupon userCoupon = couponService.getUserCouponOrNull(userCouponId);

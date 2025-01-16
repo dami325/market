@@ -69,13 +69,6 @@ public class Order extends Auditor {
                 .toList();
     }
 
-    public void validate() {
-        switch (this.status) {
-            case PAYMENT_SUCCESS -> throw new PaymentAlreadySuccessException("이미 결제가 완료된 주문입니다.");
-            case ORDER_CANCELLED -> throw new OrderAlreadyCanceledException("취소된 주문 입니다.");
-        }
-    }
-
     @Getter
     @RequiredArgsConstructor
     public enum OrderStatus {

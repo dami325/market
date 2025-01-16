@@ -5,6 +5,7 @@ import io.dami.market.domain.coupon.CouponRepository;
 import io.dami.market.domain.order.Order;
 import io.dami.market.domain.order.OrderCommand;
 import io.dami.market.domain.order.OrderService;
+import io.dami.market.domain.order.PaymentAlreadySuccessException;
 import io.dami.market.domain.payment.Payment;
 import io.dami.market.domain.product.Product;
 import io.dami.market.domain.product.ProductIsOutOfStock;
@@ -20,11 +21,15 @@ import io.dami.market.utils.fixture.UserCouponFixture;
 import io.dami.market.utils.fixture.UserFixture;
 import jakarta.persistence.EntityManager;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class PaymentFacadeIntegrationTest extends IntegrationServiceTest {
 
@@ -68,7 +73,6 @@ public class PaymentFacadeIntegrationTest extends IntegrationServiceTest {
         // when
         paymentFacade.pay(user.getId(), order.getId(), userCoupon.getId());
 
-
         // then 테스트 에서만 쓰는 쿼리 만들기 싫어서 EntityManager 로 구현
         Order resultOrder = (Order) em.createQuery("select orders from Order orders where orders.user.id = :userid")
                 .setParameter("userid", user.getId())
@@ -96,8 +100,8 @@ public class PaymentFacadeIntegrationTest extends IntegrationServiceTest {
         int orderQuantity = 3;
 
         List<OrderCommand.OrderDetails> orderDetails = List.of(
-                new OrderCommand.OrderDetails(productA.getId(), orderQuantity), // 3만원
-                new OrderCommand.OrderDetails(productB.getId(), orderQuantity) // 6만원
+                new OrderCommand.OrderDetails(productA.getId(), orderQuantity),
+                new OrderCommand.OrderDetails(productB.getId(), orderQuantity)
         );
         Order order = orderService.order(user.getId(), orderDetails);
 
@@ -127,6 +131,64 @@ public class PaymentFacadeIntegrationTest extends IntegrationServiceTest {
         // when & then
         Assertions.assertThatThrownBy(() -> paymentFacade.pay(user.getId(), order.getId(), userCoupon.getId()), "포인트 부족해서 실패")
                 .hasMessageContaining("포인트 부족 사용 실패");
+    }
 
+    @DisplayName("""
+    결제 동시성 테스트 한 유저가 한 주문에 대해 중복 결제 요청 시 
+    이미 결제가 완료된 주문 에러 발생 
+    하나의 요청만 결제됨
+    """)
+    @Test
+    void 결제_동시성_테스트1() throws InterruptedException {
+        // given
+        Coupon coupon = couponRepository.save(CouponFixture.coupon("새해쿠폰", new BigDecimal("10000")));
+        Product productA = productRepository.save(ProductFixture.product("productA", 10000));
+        Product productB = productRepository.save(ProductFixture.product("productB", 20000));
+        User user = userRepository.save(UserFixture.user("박주닮", 90000));
+        UserCoupon userCoupon = userCouponJpaRepository.save(UserCouponFixture.userCoupon(coupon, user));
+        BigDecimal beforePoint = user.getUserPoint().getBalance();
+        int orderQuantity = 3;
+
+        List<OrderCommand.OrderDetails> orderDetails = List.of(
+                new OrderCommand.OrderDetails(productA.getId(), orderQuantity), // 3만원
+                new OrderCommand.OrderDetails(productB.getId(), orderQuantity) // 6만원
+        );
+        Order order = orderService.order(user.getId(), orderDetails);
+
+        int threads = 3;
+        ExecutorService executorService = Executors.newFixedThreadPool(threads);
+        CountDownLatch latch = new CountDownLatch(threads);
+
+        // when
+        for (int i = 0; i < threads; i++) {
+            executorService.submit(() -> {
+                try {
+                    paymentFacade.pay(user.getId(), order.getId(), userCoupon.getId());
+                } catch (PaymentAlreadySuccessException e) {
+                    Assertions.assertThat(e.getMessage()).isEqualTo("이미 결제가 완료된 주문입니다.");
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+        latch.await();
+        executorService.shutdown();
+
+        // then
+        Order resultOrder = (Order) em.createQuery("select orders from Order orders where orders.user.id = :userid")
+                .setParameter("userid", user.getId())
+                .getSingleResult();
+
+        Payment resultPayment = (Payment) em.createQuery("select pay from Payment pay where pay.order.id = :orderId")
+                .setParameter("orderId", resultOrder.getId())
+                .getSingleResult();
+
+        User resultUser = userRepository.getUser(user.getId());
+        BigDecimal resultPoint = resultUser.getUserPoint().getBalance();
+        Assertions.assertThat(resultPoint).isEqualTo(beforePoint.subtract(resultPayment.getAmount())); // 사용자 금액 차감 검증
+        Assertions.assertThat(resultOrder.getStatus()).isEqualTo(Order.OrderStatus.PAYMENT_SUCCESS); // 주문 상태 검증
+        Assertions.assertThat(resultPayment.getDiscountAmount().compareTo(coupon.getDiscountAmount())).isEqualTo(0); // 할인적용 검증
+        Assertions.assertThat(resultPayment.getPaymentStatus()).isEqualTo(Payment.PaymentStatue.SUCCESS); // 결제 상태 검증
+        Assertions.assertThat(resultPayment.getAmount()).isEqualTo(resultOrder.getTotalPrice().subtract(coupon.getDiscountAmount())); // 결제금액 검증
     }
 }
