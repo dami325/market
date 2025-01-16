@@ -2,16 +2,21 @@ package io.dami.market.application.product;
 
 import io.dami.market.application.order.OrderFacade;
 import io.dami.market.domain.coupon.CouponRepository;
+import io.dami.market.domain.order.Order;
 import io.dami.market.domain.order.OrderCommand;
+import io.dami.market.domain.order.OrderRepository;
 import io.dami.market.domain.product.Product;
+import io.dami.market.domain.product.ProductIsOutOfStock;
 import io.dami.market.domain.product.ProductRepository;
 import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;
 import io.dami.market.interfaces.product.ProductResponse;
 import io.dami.market.utils.IntegrationServiceTest;
+import io.dami.market.utils.fixture.OrderFixture;
 import io.dami.market.utils.fixture.ProductFixture;
 import io.dami.market.utils.fixture.UserFixture;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,7 +25,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
-class OrderDetailsServiceIntegrationTest extends IntegrationServiceTest {
+class ProductServiceIntegrationTest extends IntegrationServiceTest {
 
     @Autowired
     private OrderFacade orderFacade;
@@ -32,10 +37,10 @@ class OrderDetailsServiceIntegrationTest extends IntegrationServiceTest {
     private ProductRepository productRepository;
 
     @Autowired
-    private CouponRepository couponRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private OrderRepository orderRepository;
 
     @Test
     void 상품_리스트_조회_성공() {
@@ -76,7 +81,7 @@ class OrderDetailsServiceIntegrationTest extends IntegrationServiceTest {
         Product productD = productRepository.save(ProductFixture.product("카스", 20000));
         Product productE = productRepository.save(ProductFixture.product("처음처럼", 20000));
         Product productF = productRepository.save(ProductFixture.product("테라", 20000));
-        User user = UserFixture.user("박주닮",10000000);
+        User user = UserFixture.user("박주닮", 10000000);
         userRepository.save(user);
         int maxQuantity = 50;
         int minQuantity = 2;
@@ -100,10 +105,25 @@ class OrderDetailsServiceIntegrationTest extends IntegrationServiceTest {
         int maxSaleCount = 0;
         int minSaleCount = Integer.MAX_VALUE;
         for (ProductResponse.Top5ProductDetails productDetails : result) {
-            maxSaleCount = Math.max(maxSaleCount,productDetails.total_quantity_sold());
-            minSaleCount = Math.min(minSaleCount,productDetails.total_quantity_sold());
+            maxSaleCount = Math.max(maxSaleCount, productDetails.total_quantity_sold());
+            minSaleCount = Math.min(minSaleCount, productDetails.total_quantity_sold());
         }
         Assertions.assertThat(maxSaleCount).isEqualTo(maxQuantity);
         Assertions.assertThat(minSaleCount).isEqualTo(minQuantity);
+    }
+
+    @DisplayName("주문 상품 재고 부족 차감 실패 ProductIsOutOfStock 발생")
+    @Test
+    void 상품_재고_부족_차감_실패() {
+        // given
+        int stockQuantity = 2; // 재고 수량 세팅
+        int quantity = 3; // 3개 주문
+        Product product = productRepository.save(ProductFixture.product("좋은데이", 5000, stockQuantity));
+        User user = userRepository.save(UserFixture.user("박주닮"));
+        Order order = orderRepository.save(OrderFixture.order(user, quantity, product));
+
+        // when & then
+        Assertions.assertThatThrownBy(() -> productService.quantitySubtract(order))
+                .isInstanceOf(ProductIsOutOfStock.class);
     }
 }

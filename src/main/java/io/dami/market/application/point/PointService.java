@@ -29,7 +29,7 @@ public class PointService {
 
     @Transactional
     public void usePoints(Long userId, BigDecimal totalAmount) {
-        User user = userRepository.getUser(userId);
+        User user = userRepository.getUserWithLock(userId);
         user.usePoint(totalAmount);
     }
 }

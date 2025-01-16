@@ -3,6 +3,9 @@ package io.dami.market.utils.fixture;
 import io.dami.market.domain.product.Product;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public record ProductFixture() {
 
@@ -37,5 +40,13 @@ public record ProductFixture() {
                 .price(BigDecimal.valueOf(price))
                 .stockQuantity(stockQuantity)
                 .build();
+    }
+
+    public static List<Product> products(Map<String,Integer> productMap) {
+        ArrayList<Product> products = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : productMap.entrySet()) {
+            products.add(product(entry.getKey(),entry.getValue()));
+        }
+        return products;
     }
 }
