@@ -1,4 +1,4 @@
-package io.dami.market.infra.config;
+package io.dami.market.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;

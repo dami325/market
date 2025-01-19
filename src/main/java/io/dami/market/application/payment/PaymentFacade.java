@@ -29,14 +29,14 @@ public class PaymentFacade {
         // 주문 조회
         Order order = orderService.getOrderWithLock(orderId);
 
+        // 상품 재고 검증 및 차감
+        productService.quantitySubtract(order);
+
         // 쿠폰 조회 nullable
         UserCoupon userCoupon = couponService.getUserCouponOrNull(userCouponId);
 
         // 결제 테이블 생성
         Payment payment = paymentService.pay(order, userCoupon);
-
-        // 상품 재고 검증 및 차감
-        productService.quantitySubtract(order);
 
         // 포인트 검증 및 차감
         pointService.usePoints(userId, payment.getAmount());

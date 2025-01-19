@@ -1,4 +1,4 @@
-package io.dami.market.infra.config;
+package io.dami.market.interfaces.interceptor;
 
 import io.dami.market.domain.user.UserService;
 import io.dami.market.domain.user.User;

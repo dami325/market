@@ -1,4 +1,4 @@
-package io.dami.market.infra.config;
+package io.dami.market.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
