@@ -1,4 +1,4 @@
-package io.dami.market.infra.config;
+package io.dami.market.interfaces.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;

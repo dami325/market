@@ -1,5 +1,6 @@
-package io.dami.market.infra.config;
+package io.dami.market.config;
 
+import io.dami.market.interfaces.interceptor.UserValidationInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
