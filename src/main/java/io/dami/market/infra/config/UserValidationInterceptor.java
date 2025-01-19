@@ -1,6 +1,6 @@
 package io.dami.market.infra.config;
 
-import io.dami.market.application.user.UserService;
+import io.dami.market.domain.user.UserService;
 import io.dami.market.domain.user.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

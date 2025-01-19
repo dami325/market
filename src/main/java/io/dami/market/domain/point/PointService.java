@@ -1,4 +1,4 @@
-package io.dami.market.application.point;
+package io.dami.market.domain.point;
 
 import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;
@@ -29,7 +29,7 @@ public class PointService {
 
     @Transactional
     public void usePoints(Long userId, BigDecimal totalAmount) {
-        User user = userRepository.getUser(userId);
+        User user = userRepository.getUserWithLock(userId);
         user.usePoint(totalAmount);
     }
 }

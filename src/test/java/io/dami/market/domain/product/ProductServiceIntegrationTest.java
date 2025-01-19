@@ -1,17 +1,24 @@
-package io.dami.market.application.product;
+package io.dami.market.domain.product;
 
-import io.dami.market.application.order.OrderFacade;
-import io.dami.market.domain.coupon.CouponRepository;
+import io.dami.market.application.payment.PaymentFacade;
+import io.dami.market.domain.order.Order;
 import io.dami.market.domain.order.OrderCommand;
+import io.dami.market.domain.order.OrderRepository;
+import io.dami.market.domain.order.OrderService;
 import io.dami.market.domain.product.Product;
+import io.dami.market.domain.product.ProductIsOutOfStock;
 import io.dami.market.domain.product.ProductRepository;
+import io.dami.market.domain.product.ProductService;
 import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;
+import io.dami.market.infra.product.ProductJpaRepository;
 import io.dami.market.interfaces.product.ProductResponse;
 import io.dami.market.utils.IntegrationServiceTest;
+import io.dami.market.utils.fixture.OrderFixture;
 import io.dami.market.utils.fixture.ProductFixture;
 import io.dami.market.utils.fixture.UserFixture;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,11 +26,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-class OrderDetailsServiceIntegrationTest extends IntegrationServiceTest {
+class ProductServiceIntegrationTest extends IntegrationServiceTest {
 
     @Autowired
-    private OrderFacade orderFacade;
+    private OrderService orderService;
 
     @Autowired
     private ProductService productService;
@@ -32,10 +42,49 @@ class OrderDetailsServiceIntegrationTest extends IntegrationServiceTest {
     private ProductRepository productRepository;
 
     @Autowired
-    private CouponRepository couponRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private PaymentFacade paymentFacade;
+
+    @Autowired
+    private ProductJpaRepository productJpaRepository;
+
+    @DisplayName("상품 재고 차감 10명 동시성 테스트 성공")
+    @Test
+    void 상품_재고_차감_10명_동시성_테스트_성공() throws InterruptedException {
+        // given
+        int stockQuantity = 30; // 재고 수량 세팅
+        int quantity = 3; // 3개 주문
+        Product product = productRepository.save(ProductFixture.product("좋은데이", 5000, stockQuantity));
+        User user = userRepository.save(UserFixture.user("박주닮"));
+        Order order = orderRepository.save(OrderFixture.order(user, quantity, product));
+
+        int threads = 10;
+        ExecutorService executorService = Executors.newFixedThreadPool(threads);
+        CountDownLatch latch = new CountDownLatch(threads);
+
+        // when
+        for (int i = 0; i < threads; i++) {
+            executorService.submit(() -> {
+                try {
+                    productService.quantitySubtract(order);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+        latch.await();
+        executorService.shutdown();
+
+        // then
+        Product result = productJpaRepository.findById(product.getId()).get();
+        Assertions.assertThat(result.getStockQuantity()).isEqualTo(0);
+    }
+
 
     @Test
     void 상품_리스트_조회_성공() {
@@ -76,7 +125,7 @@ class OrderDetailsServiceIntegrationTest extends IntegrationServiceTest {
         Product productD = productRepository.save(ProductFixture.product("카스", 20000));
         Product productE = productRepository.save(ProductFixture.product("처음처럼", 20000));
         Product productF = productRepository.save(ProductFixture.product("테라", 20000));
-        User user = UserFixture.user("박주닮",10000000);
+        User user = UserFixture.user("박주닮", 10000000);
         userRepository.save(user);
         int maxQuantity = 50;
         int minQuantity = 2;
@@ -88,8 +137,8 @@ class OrderDetailsServiceIntegrationTest extends IntegrationServiceTest {
                 new OrderCommand.OrderDetails(productE.getId(), maxQuantity),
                 new OrderCommand.OrderDetails(productF.getId(), 1)
         );
-        OrderCommand.order command = new OrderCommand.order(user.getId(), null, orderDetails);
-        orderFacade.createOrder(command);
+        Order order = orderService.order(user.getId(), orderDetails);
+        paymentFacade.pay(user.getId(), order.getId(), null);
 
         // when
         List<ProductResponse.Top5ProductDetails> result = productService.getProductsTop5();
@@ -100,10 +149,25 @@ class OrderDetailsServiceIntegrationTest extends IntegrationServiceTest {
         int maxSaleCount = 0;
         int minSaleCount = Integer.MAX_VALUE;
         for (ProductResponse.Top5ProductDetails productDetails : result) {
-            maxSaleCount = Math.max(maxSaleCount,productDetails.total_quantity_sold());
-            minSaleCount = Math.min(minSaleCount,productDetails.total_quantity_sold());
+            maxSaleCount = Math.max(maxSaleCount, productDetails.total_quantity_sold());
+            minSaleCount = Math.min(minSaleCount, productDetails.total_quantity_sold());
         }
         Assertions.assertThat(maxSaleCount).isEqualTo(maxQuantity);
         Assertions.assertThat(minSaleCount).isEqualTo(minQuantity);
+    }
+
+    @DisplayName("주문 상품 재고 부족 차감 실패 ProductIsOutOfStock 발생")
+    @Test
+    void 상품_재고_부족_차감_실패() {
+        // given
+        int stockQuantity = 2; // 재고 수량 세팅
+        int quantity = 3; // 3개 주문
+        Product product = productRepository.save(ProductFixture.product("좋은데이", 5000, stockQuantity));
+        User user = userRepository.save(UserFixture.user("박주닮"));
+        Order order = orderRepository.save(OrderFixture.order(user, quantity, product));
+
+        // when & then
+        Assertions.assertThatThrownBy(() -> productService.quantitySubtract(order))
+                .isInstanceOf(ProductIsOutOfStock.class);
     }
 }

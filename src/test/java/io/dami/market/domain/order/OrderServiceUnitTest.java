@@ -1,9 +1,5 @@
-package io.dami.market.application.order;
+package io.dami.market.domain.order;
 
-import io.dami.market.domain.order.Order;
-import io.dami.market.domain.order.OrderCommand;
-import io.dami.market.domain.order.OrderRepository;
-import io.dami.market.domain.order.OrderService;
 import io.dami.market.domain.product.Product;
 import io.dami.market.domain.product.ProductRepository;
 import io.dami.market.domain.user.User;
@@ -36,7 +32,7 @@ class OrderServiceUnitTest {
     private ProductRepository productRepository;
 
     @Test
-    void 주문서_쿠폰_적용_발행_성공() {
+    void 주문서_발행_성공() {
         // given
         Long userId = 5L;
         Long productAId = 15L;
@@ -44,8 +40,8 @@ class OrderServiceUnitTest {
         int productAPrice = 10000;
         int productBPrice = 20000;
 
-        Product productA = ProductFixture.product(productAId,"productA", productAPrice);
-        Product productB = ProductFixture.product(productBId,"productB", productBPrice);
+        Product productA = ProductFixture.product(productAId, "productA", productAPrice);
+        Product productB = ProductFixture.product(productBId, "productB", productBPrice);
 
         User user = UserFixture.user("박주닮");
 
@@ -54,7 +50,6 @@ class OrderServiceUnitTest {
                 new OrderCommand.OrderDetails(productAId, orderQuantity),
                 new OrderCommand.OrderDetails(productBId, orderQuantity)
         );
-        OrderCommand.order command = new OrderCommand.order(userId, null, orderDetails);
 
         Order orderInit = Order.builder()
                 .status(Order.OrderStatus.PENDING_PAYMENT)
@@ -66,7 +61,7 @@ class OrderServiceUnitTest {
         when(productRepository.getAllById(any())).thenReturn(List.of(productA, productB));
 
         // when
-        Order order = orderService.order(command.userId(), command.orderDetails());
+        Order order = orderService.order(userId, orderDetails);
 
         // then
         assertThat(order.getOrderDetails().size()).isEqualTo(2);

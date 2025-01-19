@@ -1,10 +1,6 @@
-package io.dami.market.application.product;
+package io.dami.market.domain.product;
 
 import io.dami.market.domain.order.Order;
-import io.dami.market.domain.order.OrderDetail;
-import io.dami.market.domain.order.OrderRepository;
-import io.dami.market.domain.product.Product;
-import io.dami.market.domain.product.ProductRepository;
 import io.dami.market.interfaces.product.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -46,8 +43,11 @@ public class ProductService {
 
     @Transactional
     public void quantitySubtract(Order order) {
-        productRepository.findAllByIdWithLock(order.getOrderProductIds());
-        order.getOrderDetails().forEach(OrderDetail::productStockSubtract);
+        Map<Long, Product> productMap = productRepository.findAllByIdWithLock(order.getOrderProductIds());
+        order.getOrderDetails().forEach(orderDetail -> {
+            Product product = productMap.get(orderDetail.getProduct().getId());
+            product.subtractStock(orderDetail.getQuantity());
+        });
     }
 
 }

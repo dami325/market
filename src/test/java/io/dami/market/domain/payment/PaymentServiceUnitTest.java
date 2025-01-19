@@ -1,10 +1,7 @@
-package io.dami.market.application.payment;
+package io.dami.market.domain.payment;
 
 import io.dami.market.domain.coupon.Coupon;
 import io.dami.market.domain.order.Order;
-import io.dami.market.domain.order.OrderRepository;
-import io.dami.market.domain.payment.Payment;
-import io.dami.market.domain.payment.PaymentRepository;
 import io.dami.market.domain.product.Product;
 import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserCoupon;
@@ -29,8 +26,6 @@ class PaymentServiceUnitTest {
     private PaymentService paymentService;
     @Mock
     private PaymentRepository paymentRepository;
-    @Mock
-    private OrderRepository orderRepository;
 
     /**
      * 재고 정상 차감

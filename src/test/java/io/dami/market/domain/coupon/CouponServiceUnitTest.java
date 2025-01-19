@@ -1,7 +1,8 @@
-package io.dami.market.application.coupon;
+package io.dami.market.domain.coupon;
 
 import io.dami.market.domain.coupon.Coupon;
 import io.dami.market.domain.coupon.CouponRepository;
+import io.dami.market.domain.coupon.CouponService;
 import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;
 import io.dami.market.utils.fixture.CouponFixture;

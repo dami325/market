@@ -1,5 +1,5 @@
 package io.dami.market.interfaces.coupon;
-import io.dami.market.application.coupon.CouponService;
+import io.dami.market.domain.coupon.CouponService;
 import io.dami.market.interfaces.advice.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

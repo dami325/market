@@ -1,15 +1,11 @@
-package io.dami.market.application.user;
+package io.dami.market.domain.user;
 
 import io.dami.market.domain.coupon.Coupon;
-import io.dami.market.domain.user.User;
-import io.dami.market.domain.user.UserCoupon;
-import io.dami.market.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
