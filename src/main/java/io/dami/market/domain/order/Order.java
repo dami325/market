@@ -1,16 +1,15 @@
 package io.dami.market.domain.order;
 
 import io.dami.market.domain.Auditor;
-import io.dami.market.domain.product.Product;
-import io.dami.market.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -26,10 +25,13 @@ public class Order extends Auditor {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    @Comment("사용자 ID (외래 키)")
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    @Comment("주문 요청자")
+    private Long userId;
+
+    @Column(name = "issued_coupon_id")
+    @Comment("주문 시 사용한 유저 쿠폰")
+    private Long issuedCouponId;
 
     @Enumerated(EnumType.STRING)
     @Comment("주문 상태 (예: 대기, 완료, 실패)")
@@ -38,46 +40,59 @@ public class Order extends Auditor {
 
     @Comment("총 결제 금액")
     @Builder.Default
-    @Column(name = "total_price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal totalPrice = BigDecimal.ZERO;
+    @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
+    private BigDecimal totalAmount = BigDecimal.ZERO;
+
+    @Comment("할인 금액")
+    @Builder.Default
+    @Column(name = "discount_amount", nullable = false, precision = 10, scale = 2)
+    private BigDecimal discountAmount = BigDecimal.ZERO;
 
     @Builder.Default
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<OrderDetail> orderDetails = new HashSet<>();
 
-    public void updateOrderStatus(OrderStatus orderStatus) {
-        this.status = orderStatus;
+    public static Order createOrderForm(Long userId, Long issuedCouponId) {
+        return Order.builder()
+                .userId(userId)
+                .issuedCouponId(issuedCouponId)
+                .status(OrderStatus.ORDER_COMPLETE)
+                .build();
     }
 
-    public void addOrderDetail(Product product, int quantity) {
-        BigDecimal detailTotalPrice = product.getTotalPrice(quantity);
-        OrderDetail orderDetail = OrderDetail.builder()
-                .order(this)
-                .product(product)
-                .quantity(quantity)
-                .totalPrice(detailTotalPrice)
-                .build();
-        this.totalPrice = this.totalPrice.add(detailTotalPrice);
+    public void addOrderDetail(OrderDetail orderDetail) {
+        this.totalAmount = this.totalAmount.add(orderDetail.getTotalPrice());
         this.orderDetails.add(orderDetail);
     }
 
+    public Map<Long, Integer> getProductQuantityMap() {
+        return this.orderDetails.stream()
+                .collect(Collectors.toMap(
+                        OrderDetail::getProductId,  // 상품 ID를 키로
+                        OrderDetail::getQuantity,   // 수량을 값으로
+                        Integer::sum                // 같은 상품 ID가 있을 경우 수량 합산
+                ));
+    }
 
-    public List<Long> getOrderProductIds() {
-        return this.getOrderDetails().stream()
-                .map(OrderDetail::getProduct)
-                .map(Product::getId)
-                .toList();
+    public void discountApply(BigDecimal discountAmount) {
+        this.discountAmount = discountAmount;
+
+        // 총 주문 금액보다 할인 금액이 큰 경우 처리
+        if (this.discountAmount.compareTo(this.totalAmount) > 0) {
+            this.discountAmount = this.totalAmount; // 할인 금액을 주문 총액으로 조정
+        }
+        this.totalAmount = this.totalAmount.subtract(this.discountAmount);
     }
 
     @Getter
     @RequiredArgsConstructor
     public enum OrderStatus {
-        OUT_OF_STOCK("재고 소진 대기"),
-        PENDING_PAYMENT("결제 대기"),
-        PAYMENT_SUCCESS("결제 완료"),
+        ORDER_COMPLETE("주문 완료"),
         ORDER_CANCELLED("주문 취소");
 
         private final String description;
     }
+
+
 }
 

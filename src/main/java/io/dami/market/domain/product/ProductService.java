@@ -1,6 +1,5 @@
 package io.dami.market.domain.product;
 
-import io.dami.market.domain.order.Order;
 import io.dami.market.interfaces.product.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -9,8 +8,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +32,7 @@ public class ProductService {
 
         Long total = productRepository.getProductsCount();
 
-        return new PageImpl<>(content,pageable,total);
+        return new PageImpl<>(content, pageable, total);
     }
 
     @Transactional(readOnly = true)
@@ -42,12 +46,20 @@ public class ProductService {
     }
 
     @Transactional
-    public void quantitySubtract(Order order) {
-        Map<Long, Product> productMap = productRepository.findAllByIdWithLock(order.getOrderProductIds());
-        order.getOrderDetails().forEach(orderDetail -> {
-            Product product = productMap.get(orderDetail.getProduct().getId());
-            product.subtractStock(orderDetail.getQuantity());
+    public void quantitySubtract(Map<Long, Integer> productQuantityMap) {
+        Map<Long, Product> productMap = productRepository.findAllByIdWithLock(productQuantityMap.keySet()).stream()
+                .collect(toMap(Product::getId, identity()));
+
+        productQuantityMap.forEach((productId, quantity) -> {
+            Product product = productMap.get(productId);
+            product.subtractStock(quantity);
         });
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, Product> getProductMap(Set<Long> productIds) {
+        return productRepository.getAllById(productIds).stream()
+                .collect(toMap(Product::getId, identity()));
     }
 
 }

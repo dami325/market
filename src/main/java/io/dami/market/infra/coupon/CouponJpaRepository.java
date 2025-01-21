@@ -15,21 +15,29 @@ public interface CouponJpaRepository extends JpaRepository<Coupon, Long> {
             SELECT c
             FROM Coupon c
             WHERE 1 = 1
-                AND c.totalQuantity > c.issuedQuantity
-                AND c.endDate > now()
-                AND c.id NOT IN (
-                SELECT uc.coupon.id
-                FROM UserCoupon uc
-                WHERE uc.user.id = :userId
+            AND c.totalQuantity > c.issuedQuantity
+            AND c.endDate > now()
+            AND c.id NOT IN (
+            SELECT uc.coupon.id
+            FROM IssuedCoupon uc
+            WHERE uc.userId = :userId
             )
-    """)
+            """)
     List<Coupon> getFirstServedCoupons(Long userId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
-    SELECT cp
-    FROM Coupon cp
-    WHERE cp.id = :couponId
-    """)
+            SELECT c
+            FROM Coupon c
+            WHERE c.id = :couponId
+            """)
     Optional<Coupon> findByIdWithLock(Long couponId);
+
+    @Query("""
+            SELECT c
+            FROM Coupon c
+            INNER JOIN c.issuedCoupons issued
+            WHERE issued.userId = :userId
+            """)
+    List<Coupon> getCouponsByUserId(Long userId);
 }

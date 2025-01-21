@@ -10,22 +10,4 @@ import java.util.Optional;
 
 public interface UserJpaRepository extends JpaRepository<User, Long> {
 
-    @Query("""
-            select us
-            from User us
-            inner join fetch  us.userPoint
-            left join fetch  us.userCoupons
-            where us.id = :userId
-            """)
-    Optional<User> findByIdWithFetch(Long userId);
-
-    @Query("""
-            select us
-            from User us
-            inner join fetch  us.userPoint
-            left join fetch  us.userCoupons
-            where us.id = :userId
-            """)
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<User> findByIdWithLock(Long userId);
 }

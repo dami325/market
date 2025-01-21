@@ -7,10 +7,11 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ProductJpaRepository extends JpaRepository<Product, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Product p WHERE p.id IN :orderProductIds")
-    List<Product> findAllByIdWithLock(List<Long> orderProductIds);
+    List<Product> findAllByIdWithLock(Set<Long> orderProductIds);
 }

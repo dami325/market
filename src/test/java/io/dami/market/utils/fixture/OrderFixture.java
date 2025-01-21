@@ -1,27 +1,26 @@
 package io.dami.market.utils.fixture;
 
 import io.dami.market.domain.order.Order;
+import io.dami.market.domain.order.OrderDetail;
 import io.dami.market.domain.product.Product;
-import io.dami.market.domain.user.User;
-
-import java.math.BigDecimal;
 
 public record OrderFixture() {
 
-    public static Order order(User user) {
+    public static Order order(Long userId) {
         return Order.builder()
-                .user(user)
-                .status(Order.OrderStatus.PENDING_PAYMENT)
+                .userId(userId)
+                .status(Order.OrderStatus.ORDER_COMPLETE)
                 .build();
     }
 
-    public static Order order(User user, int quantity, Product... products) {
+    public static Order order(Long userId, int quantity, Product... products) {
         Order order = Order.builder()
-                .user(user)
-                .status(Order.OrderStatus.PENDING_PAYMENT)
+                .userId(userId)
+                .status(Order.OrderStatus.ORDER_COMPLETE)
                 .build();
         for (Product product : products) {
-            order.addOrderDetail(product, quantity);
+            OrderDetail orderDetail = OrderDetail.createOrderDetail(order, product.getId(), quantity, product.getTotalPrice(quantity));
+            order.addOrderDetail(orderDetail);
         }
         return order;
     }

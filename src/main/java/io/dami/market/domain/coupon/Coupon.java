@@ -1,8 +1,6 @@
 package io.dami.market.domain.coupon;
 
 import io.dami.market.domain.Auditor;
-import io.dami.market.domain.user.User;
-import io.dami.market.domain.user.UserCoupon;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
@@ -48,27 +46,38 @@ public class Coupon extends Auditor {
 
     @Builder.Default
     @OneToMany(mappedBy = "coupon", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    private Set<UserCoupon> userCoupons = new HashSet<>();
+    private Set<IssuedCoupon> issuedCoupons = new HashSet<>();
 
-    public void issue(User user) {
+    public void issuedCoupon(Long userId) {
         checkExpiry();
-        if (user == null) {
+        if (userId == null) {
             throw new IllegalArgumentException("유효하지 않은 사용자.");
         }
         if (this.issuedQuantity == this.totalQuantity) {
             throw new IllegalArgumentException("발급 수량 소진");
         }
-
+        if (this.issuedCoupons.stream().anyMatch(issuedCoupon -> issuedCoupon.getUserId().equals(userId))) {
+            throw new IllegalArgumentException("같은 쿠폰은 하나만 발급 가능합니다.");
+        }
         this.issuedQuantity++;
 
-        user.addCoupon(this);
+        IssuedCoupon issuedCoupon = createIssuedCoupon(this, userId);
+        this.issuedCoupons.add(issuedCoupon);
     }
 
-    public void checkExpiry(){
+    public void checkExpiry() {
         LocalDateTime now = LocalDateTime.now();
         if (now.isAfter(this.endDate)) {
             throw new IllegalArgumentException("만료된 쿠폰입니다.");
         }
+    }
+
+    private IssuedCoupon createIssuedCoupon(Coupon coupon, Long userId) {
+        return IssuedCoupon.builder()
+                .coupon(coupon)
+                .userId(userId)
+                .issuedAt(LocalDateTime.now())
+                .build();
     }
 
 }

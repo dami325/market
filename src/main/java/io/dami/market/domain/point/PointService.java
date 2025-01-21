@@ -12,24 +12,23 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class PointService {
 
-    private final UserRepository userRepository;
+    private final PointRepository pointRepository;
 
     @Transactional(readOnly = true)
     public BigDecimal getBalance(Long userId) {
-        return userRepository.getUser(userId)
-                .getUserPoint()
-                .getBalance();
+        return pointRepository.getPointByUserId(userId)
+                .getTotalPoint();
     }
 
     @Transactional
     public void chargePoint(Long userId, BigDecimal amount) {
-        userRepository.getUser(userId)
-                .chargePoint(amount);
+        pointRepository.getPointByUserId(userId)
+                .charge(amount);
     }
 
     @Transactional
     public void usePoints(Long userId, BigDecimal totalAmount) {
-        User user = userRepository.getUserWithLock(userId);
-        user.usePoint(totalAmount);
+        Point point = pointRepository.getPointByUserIdWithLock(userId);
+        point.subtract(totalAmount);
     }
 }

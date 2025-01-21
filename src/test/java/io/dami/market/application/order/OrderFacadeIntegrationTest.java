@@ -1,5 +1,7 @@
-package io.dami.market.domain.order;
+package io.dami.market.application.order;
 
+import io.dami.market.domain.order.Order;
+import io.dami.market.domain.order.OrderCommand;
 import io.dami.market.domain.product.Product;
 import io.dami.market.domain.product.ProductRepository;
 import io.dami.market.domain.user.User;
@@ -16,10 +18,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-class OrderServiceIntegrationTest extends IntegrationServiceTest {
+public class OrderFacadeIntegrationTest extends IntegrationServiceTest {
 
     @Autowired
-    private OrderService orderService;
+    private OrderFacade orderFacade;
 
     @Autowired
     protected UserRepository userRepository;
@@ -34,16 +36,17 @@ class OrderServiceIntegrationTest extends IntegrationServiceTest {
         User user = userRepository.save(UserFixture.user("박주닮"));
         int price = 5000;
         int quantity = 5;
+        Long issuedCouponId = null;
         Product product = productRepository.save(ProductFixture.product("좋은데이", price));
-        List<OrderCommand.OrderDetails> orderDetails = new ArrayList<>();
-        orderDetails.add(new OrderCommand.OrderDetails(product.getId(), quantity));
+        List<OrderCommand.ProductStock> productStocks = new ArrayList<>();
+        productStocks.add(new OrderCommand.ProductStock(product.getId(), quantity));
+        OrderCommand.CreateOrder commend = new OrderCommand.CreateOrder(user.getId(), issuedCouponId, productStocks);
 
         // when
-        Order result = orderService.order(user.getId(), orderDetails);
+        Order result = orderFacade.createOrder(commend);
 
         // then
-        Assertions.assertThat(result.getTotalPrice().compareTo(BigDecimal.valueOf(price * quantity))).isEqualTo(0);
-        Assertions.assertThat(result.getStatus()).isEqualTo(Order.OrderStatus.PENDING_PAYMENT);
+        Assertions.assertThat(result.getTotalAmount().compareTo(BigDecimal.valueOf(price * quantity))).isEqualTo(0);
+        Assertions.assertThat(result.getStatus()).isEqualTo(Order.OrderStatus.ORDER_COMPLETE);
     }
-
 }

@@ -1,7 +1,6 @@
 package io.dami.market.domain.order;
 
 import io.dami.market.domain.Auditor;
-import io.dami.market.domain.product.Product;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
@@ -28,9 +27,8 @@ public class OrderDetail extends Auditor {
     private Order order;
 
     @Comment("상품 ID (외래 키)")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @Column(name = "product_id", nullable = false)
+    private Long productId;
 
     @Comment("주문 수량")
     @Column(name = "quantity", nullable = false)
@@ -39,5 +37,14 @@ public class OrderDetail extends Auditor {
     @Comment("총 주문 금액")
     @Column(name = "total_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalPrice;
+
+    public static OrderDetail createOrderDetail(Order order, Long productId, int quantity, BigDecimal totalPrice) {
+        return OrderDetail.builder()
+                .order(order)
+                .productId(productId)
+                .quantity(quantity)
+                .totalPrice(totalPrice)
+                .build();
+    }
 
 }

@@ -2,7 +2,7 @@ package io.dami.market.infra.coupon;
 
 import io.dami.market.domain.coupon.Coupon;
 import io.dami.market.domain.coupon.CouponRepository;
-import io.dami.market.domain.user.UserCoupon;
+import io.dami.market.domain.coupon.IssuedCoupon;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -15,7 +15,7 @@ import java.util.Optional;
 public class CouponRepositoryImpl implements CouponRepository {
 
     private final CouponJpaRepository couponJpaRepository;
-    private final UserCouponJpaRepository userCouponJpaRepository;
+    private final IssuedCouponJpaRepository issuedCouponJpaRepository;
 
     @Override
     public List<Coupon> getFirstServedCoupons(Long userId) {
@@ -28,11 +28,16 @@ public class CouponRepositoryImpl implements CouponRepository {
     }
 
     @Override
-    public Optional<UserCoupon> findUserCoupon(Long userCouponId) {
-        if (userCouponId == null) {
+    public Optional<IssuedCoupon> findIssuedCoupon(Long issuedCouponId) {
+        if (issuedCouponId == null) {
             return Optional.empty();
         }
-        return userCouponJpaRepository.findById(userCouponId);
+        return issuedCouponJpaRepository.findById(issuedCouponId);
+    }
+
+    @Override
+    public List<Coupon> getCouponsByUserId(Long userId) {
+        return couponJpaRepository.getCouponsByUserId(userId);
     }
 
     @Override

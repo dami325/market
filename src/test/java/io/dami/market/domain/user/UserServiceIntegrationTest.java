@@ -2,9 +2,6 @@ package io.dami.market.domain.user;
 
 import io.dami.market.domain.coupon.Coupon;
 import io.dami.market.domain.coupon.CouponRepository;
-import io.dami.market.domain.user.User;
-import io.dami.market.domain.user.UserRepository;
-import io.dami.market.domain.user.UserService;
 import io.dami.market.utils.IntegrationServiceTest;
 import io.dami.market.utils.fixture.CouponFixture;
 import io.dami.market.utils.fixture.UserFixture;
@@ -33,8 +30,8 @@ class UserServiceIntegrationTest extends IntegrationServiceTest {
         User user = userRepository.save(UserFixture.user("박주닮"));
         Coupon couponA = couponRepository.save(CouponFixture.coupon("설날쿠폰"));
         Coupon couponB = couponRepository.save(CouponFixture.coupon("새해쿠폰"));
-        couponA.issue(user);
-        couponB.issue(user);
+        couponA.issuedCoupon(user.getId());
+        couponB.issuedCoupon(user.getId());
 
         // when
         List<Coupon> result = userService.getUserCoupons(user.getId());

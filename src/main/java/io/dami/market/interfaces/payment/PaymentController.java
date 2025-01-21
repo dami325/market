@@ -36,7 +36,7 @@ public class PaymentController {
     })
     @PostMapping
     public ResponseEntity<Void> pay(@RequestBody PaymentRequest.Pay request) {
-        paymentFacade.pay(request.userId(), request.orderId(), request.userCouponId());
+        paymentFacade.processOrderPayment(request.userId(), request.orderId());
         return ResponseEntity.ok(null);
     }
 }

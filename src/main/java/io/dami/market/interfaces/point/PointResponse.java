@@ -1,6 +1,6 @@
 package io.dami.market.interfaces.point;
 
-import io.dami.market.domain.user.UserPoint;
+import io.dami.market.domain.point.Point;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.math.BigDecimal;
@@ -11,8 +11,8 @@ public record PointResponse() {
             @Schema(example = "10000")
             BigDecimal balance
     ) {
-        public PointDetails(UserPoint point){
-            this(point.getBalance());
+        public PointDetails(Point point){
+            this(point.getTotalPoint());
         }
     }
 }

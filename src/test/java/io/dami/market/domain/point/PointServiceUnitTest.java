@@ -1,8 +1,7 @@
 package io.dami.market.domain.point;
 
-import io.dami.market.domain.point.PointService;
 import io.dami.market.domain.user.User;
-import io.dami.market.domain.user.UserRepository;
+import io.dami.market.utils.fixture.PointFixture;
 import io.dami.market.utils.fixture.UserFixture;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -13,7 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PointServiceUnitTest {
@@ -22,19 +21,19 @@ class PointServiceUnitTest {
     private PointService pointService;
 
     @Mock
-    private UserRepository userRepository;
+    private PointRepository pointRepository;
 
     @Test
     void 포인트_충전_0이하는_실패() {
         // given
         Long userId = 5L;
         BigDecimal amount = BigDecimal.ZERO;
-        User user = UserFixture.user("박주닮");
+        Point point = PointFixture.point(userId, 0);
 
-        when(userRepository.getUser(userId)).thenReturn(user);
+        when(pointRepository.getPointByUserId(userId)).thenReturn(point);
 
         // when & then
-        Assertions.assertThatThrownBy(() -> pointService.chargePoint(userId,amount))
+        Assertions.assertThatThrownBy(() -> pointService.chargePoint(userId, amount))
                 .hasMessageContaining("0 이하는 충전불가");
     }
 
@@ -43,14 +42,14 @@ class PointServiceUnitTest {
         // given
         Long userId = 5L;
         BigDecimal amount = BigDecimal.valueOf(1000);
-        User user = UserFixture.user("박주닮");
-        BigDecimal before = user.getUserPoint().getBalance();
+        Point point = PointFixture.point(userId, 1000);
+        BigDecimal before = point.getTotalPoint();
 
-        when(userRepository.getUser(userId)).thenReturn(user);
+        when(pointRepository.getPointByUserId(userId)).thenReturn(point);
 
         // when & then
-        pointService.chargePoint(userId,amount);
+        pointService.chargePoint(userId, amount);
 
-        Assertions.assertThat(before.add(amount)).isEqualTo(user.getUserPoint().getBalance());
+        Assertions.assertThat(before.add(amount)).isEqualTo(point.getTotalPoint());
     }
 }

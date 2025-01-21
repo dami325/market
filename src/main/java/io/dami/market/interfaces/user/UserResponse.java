@@ -2,7 +2,6 @@ package io.dami.market.interfaces.user;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.dami.market.domain.coupon.Coupon;
-import io.dami.market.domain.user.UserCoupon;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.math.BigDecimal;

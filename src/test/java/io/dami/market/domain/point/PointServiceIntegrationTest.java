@@ -1,10 +1,10 @@
 package io.dami.market.domain.point;
 
 import io.dami.market.domain.payment.PointNotEnoughException;
-import io.dami.market.domain.point.PointService;
 import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;
 import io.dami.market.utils.IntegrationServiceTest;
+import io.dami.market.utils.fixture.PointFixture;
 import io.dami.market.utils.fixture.UserFixture;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -24,35 +24,41 @@ class PointServiceIntegrationTest extends IntegrationServiceTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PointRepository pointRepository;
+
     @Test
     void 포인트_조회_성공() {
         // given
-        User user = userRepository.save(UserFixture.user("박주닮", 5000));
+        User user = userRepository.save(UserFixture.user("박주닮"));
+        Point point = pointRepository.save(PointFixture.point(user.getId(), 5000));
 
         // when
         BigDecimal balance = pointService.getBalance(user.getId());
 
         // then
-        Assertions.assertThat(balance.compareTo(userRepository.getUser(user.getId()).getUserPoint().getBalance())).isEqualTo(0);
+        Assertions.assertThat(balance.compareTo(point.getTotalPoint())).isEqualTo(0);
     }
 
     @Test
     void 포인트_충전_성공() {
         // given
-        User user = userRepository.save(UserFixture.user("박주닮", 5000));
+        User user = userRepository.save(UserFixture.user("박주닮"));
+        Point point = pointRepository.save(PointFixture.point(user.getId(), 5000));
 
         // when
         pointService.chargePoint(user.getId(), BigDecimal.valueOf(12000));
 
         // then
-        User result = userRepository.getUser(user.getId());
-        Assertions.assertThat(result.getUserPoint().getBalance().compareTo(BigDecimal.valueOf(17000))).isEqualTo(0);
+        Point resultPoint = pointRepository.getPointByUserId(user.getId());
+        Assertions.assertThat(resultPoint.getTotalPoint().compareTo(BigDecimal.valueOf(17000))).isEqualTo(0);
     }
 
     @Test
     void 포인트_부족_사용_실패() {
         // given
-        User user = userRepository.save(UserFixture.user("박주닮", 5000));
+        User user = userRepository.save(UserFixture.user("박주닮"));
+        Point point = pointRepository.save(PointFixture.point(user.getId(), 5000));
 
         // when && then
         Assertions.assertThatThrownBy(() -> pointService.usePoints(user.getId(), BigDecimal.valueOf(6000)), "포인트 부족 사용 실패")
@@ -65,7 +71,8 @@ class PointServiceIntegrationTest extends IntegrationServiceTest {
     void 포인트_차감_동시_요청_시_순차적_감소_락검증_성공() throws InterruptedException {
         // given
         int point = 9000;
-        User user = userRepository.save(UserFixture.user("박주닮", point));
+        User user = userRepository.save(UserFixture.user("박주닮"));
+        pointRepository.save(PointFixture.point(user.getId(), point));
         int usePoint = 3000;
         int threads = 3;
 
@@ -86,8 +93,8 @@ class PointServiceIntegrationTest extends IntegrationServiceTest {
         executorService.shutdown();
 
         // then
-        User result = userRepository.getUser(user.getId());
-        Assertions.assertThat(result.getUserPoint().getBalance().compareTo(BigDecimal.ZERO)).isEqualTo(0);
+        Point resultPoint = pointRepository.getPointByUserId(user.getId());
+        Assertions.assertThat(resultPoint.getTotalPoint().compareTo(BigDecimal.ZERO)).isEqualTo(0);
 
     }
 

@@ -1,8 +1,7 @@
-package io.dami.market.domain.user;
+package io.dami.market.domain.coupon;
 
 import io.dami.market.domain.Auditor;
-import io.dami.market.domain.coupon.Coupon;
-import io.dami.market.domain.coupon.CouponAlreadyUsedException;
+import io.dami.market.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
@@ -14,9 +13,9 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @AllArgsConstructor
-@Table(name = "user_coupon")
+@Table(name = "issued_coupon")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserCoupon extends Auditor {
+public class IssuedCoupon extends Auditor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,9 +24,8 @@ public class UserCoupon extends Auditor {
     private Long id;
 
     @Comment("사용자 ID (외래 키)")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Comment("쿠폰 ID (외래 키)")
     @ManyToOne(fetch = FetchType.LAZY)

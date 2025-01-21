@@ -1,49 +1,41 @@
 package io.dami.market.domain.order;
 
 import io.dami.market.domain.product.Product;
-import io.dami.market.domain.product.ProductRepository;
-import io.dami.market.domain.user.User;
-import io.dami.market.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.math.BigDecimal;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final ProductRepository productRepository;
-    private final UserRepository userRepository;
 
     @Transactional
-    public Order order(Long userId, List<OrderCommand.OrderDetails> orderDetails) {
-        User user = userRepository.getUser(userId);
-
-        Map<Long, Integer> productOrderMap = orderDetails.stream()
-                .collect(Collectors.toMap(OrderCommand.OrderDetails::productId, OrderCommand.OrderDetails::quantity));
-
-        List<Product> products = productRepository.getAllById(productOrderMap.keySet());
-
-        Order order = orderRepository.save(Order.builder()
-                .status(Order.OrderStatus.PENDING_PAYMENT)
-                .user(user)
-                .build());
-
-        products.forEach(product -> {
-            int quantity = productOrderMap.get(product.getId());
-            order.addOrderDetail(product, quantity);
-        });
-
-        return order;
+    public Order getCompleteOrder(
+            Long orderId
+    ) {
+        return orderRepository.getCompleteOrder(orderId);
     }
 
     @Transactional
-    public Order getOrderWithLock(Long orderId) {
-        return orderRepository.getOrderWithLock(orderId);
+    public Order createOrder(
+            OrderCommand.CreateOrder commend,
+            BigDecimal discountAmount,
+            Map<Long, Product> productMap
+    ) {
+        Order order = orderRepository.save(Order.createOrderForm(commend.userId(), commend.issuedCouponId()));
+
+        commend.productStocks().forEach(productStock -> {
+            Product product = productMap.get(productStock.productId());
+            OrderDetail orderDetail = OrderDetail.createOrderDetail(order, product.getId(), productStock.quantity(), product.getTotalPrice(productStock.quantity()));
+            order.addOrderDetail(orderDetail);
+        });
+
+        order.discountApply(discountAmount);
+        return order;
     }
 }

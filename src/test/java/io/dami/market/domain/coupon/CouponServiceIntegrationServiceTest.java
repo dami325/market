@@ -1,8 +1,5 @@
 package io.dami.market.domain.coupon;
 
-import io.dami.market.domain.coupon.Coupon;
-import io.dami.market.domain.coupon.CouponRepository;
-import io.dami.market.domain.coupon.CouponService;
 import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;
 import io.dami.market.utils.IntegrationServiceTest;
@@ -52,7 +49,7 @@ class CouponServiceIntegrationServiceTest extends IntegrationServiceTest {
         User user = userRepository.save(UserFixture.user("박주닮"));
         Coupon couponA = couponRepository.save(CouponFixture.coupon("새해쿠폰"));
         couponRepository.save(CouponFixture.coupon("설날쿠폰"));
-        couponA.issue(user);
+        couponA.issuedCoupon(user.getId());
 
         // when
         List<Coupon> result = couponService.getFirstServedCoupons(user.getId());
@@ -71,7 +68,8 @@ class CouponServiceIntegrationServiceTest extends IntegrationServiceTest {
         couponService.issueACoupon(coupon.getId(), user.getId());
 
         // then
-        Assertions.assertThat(userRepository.getUser(user.getId()).getUserCoupons().size()).isEqualTo(1);
+        List<Coupon> result = couponRepository.getCouponsByUserId(user.getId());
+        Assertions.assertThat(result.size()).isEqualTo(1);
     }
 
     @Test
@@ -98,6 +96,7 @@ class CouponServiceIntegrationServiceTest extends IntegrationServiceTest {
         latch.await();
 
         // then
-        Assertions.assertThat(userRepository.getUser(user.getId()).getUserCoupons().size()).isEqualTo(1);
+        List<Coupon> result = couponRepository.getCouponsByUserId(user.getId());
+        Assertions.assertThat(result.size()).isEqualTo(1);
     }
 }

@@ -43,9 +43,12 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public Map<Long,Product> findAllByIdWithLock(List<Long> orderProductIds) {
-        return productJpaRepository.findAllByIdWithLock(orderProductIds)
-                .stream().collect(Collectors.toMap(Product::getId, Function.identity()));
+    public List<Product> findAllByIdWithLock(Set<Long> productIds) {
+        List<Product> products = productJpaRepository.findAllByIdWithLock(productIds);
+        if (products.size() != productIds.size()) {
+            throw new EntityNotFoundException("일부 상품이 존재하지 않습니다.");
+        }
+        return products;
     }
 
     @Override

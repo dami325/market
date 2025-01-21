@@ -1,7 +1,5 @@
 package io.dami.market.domain.coupon;
 
-import io.dami.market.domain.user.UserCoupon;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -12,5 +10,7 @@ public interface CouponRepository {
 
     Coupon save(Coupon coupon);
 
-    Optional<UserCoupon> findUserCoupon(Long userCouponId);
+    Optional<IssuedCoupon> findIssuedCoupon(Long issuedCouponId);
+
+    List<Coupon> getCouponsByUserId(Long userId);
 }

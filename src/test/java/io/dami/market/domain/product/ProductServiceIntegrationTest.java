@@ -1,20 +1,20 @@
 package io.dami.market.domain.product;
 
+import io.dami.market.application.order.OrderFacade;
 import io.dami.market.application.payment.PaymentFacade;
 import io.dami.market.domain.order.Order;
 import io.dami.market.domain.order.OrderCommand;
 import io.dami.market.domain.order.OrderRepository;
 import io.dami.market.domain.order.OrderService;
-import io.dami.market.domain.product.Product;
-import io.dami.market.domain.product.ProductIsOutOfStock;
-import io.dami.market.domain.product.ProductRepository;
-import io.dami.market.domain.product.ProductService;
+import io.dami.market.domain.point.Point;
+import io.dami.market.domain.point.PointRepository;
 import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;
 import io.dami.market.infra.product.ProductJpaRepository;
 import io.dami.market.interfaces.product.ProductResponse;
 import io.dami.market.utils.IntegrationServiceTest;
 import io.dami.market.utils.fixture.OrderFixture;
+import io.dami.market.utils.fixture.PointFixture;
 import io.dami.market.utils.fixture.ProductFixture;
 import io.dami.market.utils.fixture.UserFixture;
 import org.assertj.core.api.Assertions;
@@ -33,7 +33,7 @@ import java.util.concurrent.Executors;
 class ProductServiceIntegrationTest extends IntegrationServiceTest {
 
     @Autowired
-    private OrderService orderService;
+    private OrderFacade orderFacade;
 
     @Autowired
     private ProductService productService;
@@ -53,6 +53,9 @@ class ProductServiceIntegrationTest extends IntegrationServiceTest {
     @Autowired
     private ProductJpaRepository productJpaRepository;
 
+    @Autowired
+    private PointRepository pointRepository;
+
     @DisplayName("상품 재고 차감 10명 동시성 테스트 성공")
     @Test
     void 상품_재고_차감_10명_동시성_테스트_성공() throws InterruptedException {
@@ -61,7 +64,7 @@ class ProductServiceIntegrationTest extends IntegrationServiceTest {
         int quantity = 3; // 3개 주문
         Product product = productRepository.save(ProductFixture.product("좋은데이", 5000, stockQuantity));
         User user = userRepository.save(UserFixture.user("박주닮"));
-        Order order = orderRepository.save(OrderFixture.order(user, quantity, product));
+        Order order = orderRepository.save(OrderFixture.order(user.getId(), quantity, product));
 
         int threads = 10;
         ExecutorService executorService = Executors.newFixedThreadPool(threads);
@@ -71,7 +74,7 @@ class ProductServiceIntegrationTest extends IntegrationServiceTest {
         for (int i = 0; i < threads; i++) {
             executorService.submit(() -> {
                 try {
-                    productService.quantitySubtract(order);
+                    productService.quantitySubtract(order.getProductQuantityMap());
                 } finally {
                     latch.countDown();
                 }
@@ -125,20 +128,21 @@ class ProductServiceIntegrationTest extends IntegrationServiceTest {
         Product productD = productRepository.save(ProductFixture.product("카스", 20000));
         Product productE = productRepository.save(ProductFixture.product("처음처럼", 20000));
         Product productF = productRepository.save(ProductFixture.product("테라", 20000));
-        User user = UserFixture.user("박주닮", 10000000);
-        userRepository.save(user);
+        User user = userRepository.save(UserFixture.user("박주닮"));
+        Point point = pointRepository.save(PointFixture.point(user.getId(), 10000000));
         int maxQuantity = 50;
         int minQuantity = 2;
-        List<OrderCommand.OrderDetails> orderDetails = List.of(
-                new OrderCommand.OrderDetails(productA.getId(), minQuantity),
-                new OrderCommand.OrderDetails(productB.getId(), 20),
-                new OrderCommand.OrderDetails(productC.getId(), 35),
-                new OrderCommand.OrderDetails(productD.getId(), 45),
-                new OrderCommand.OrderDetails(productE.getId(), maxQuantity),
-                new OrderCommand.OrderDetails(productF.getId(), 1)
+        List<OrderCommand.ProductStock> productStocks = List.of(
+                new OrderCommand.ProductStock(productA.getId(), minQuantity),
+                new OrderCommand.ProductStock(productB.getId(), 20),
+                new OrderCommand.ProductStock(productC.getId(), 35),
+                new OrderCommand.ProductStock(productD.getId(), 45),
+                new OrderCommand.ProductStock(productE.getId(), maxQuantity),
+                new OrderCommand.ProductStock(productF.getId(), 1)
         );
-        Order order = orderService.order(user.getId(), orderDetails);
-        paymentFacade.pay(user.getId(), order.getId(), null);
+        OrderCommand.CreateOrder commend = new OrderCommand.CreateOrder(user.getId(), null, productStocks);
+        Order order = orderFacade.createOrder(commend);
+        paymentFacade.processOrderPayment(user.getId(), order.getId());
 
         // when
         List<ProductResponse.Top5ProductDetails> result = productService.getProductsTop5();
@@ -164,10 +168,10 @@ class ProductServiceIntegrationTest extends IntegrationServiceTest {
         int quantity = 3; // 3개 주문
         Product product = productRepository.save(ProductFixture.product("좋은데이", 5000, stockQuantity));
         User user = userRepository.save(UserFixture.user("박주닮"));
-        Order order = orderRepository.save(OrderFixture.order(user, quantity, product));
+        Order order = orderRepository.save(OrderFixture.order(user.getId(), quantity, product));
 
         // when & then
-        Assertions.assertThatThrownBy(() -> productService.quantitySubtract(order))
+        Assertions.assertThatThrownBy(() -> productService.quantitySubtract(order.getProductQuantityMap()))
                 .isInstanceOf(ProductIsOutOfStock.class);
     }
 }

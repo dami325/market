@@ -48,9 +48,12 @@ public class ProductQuerydslRepository {
                 ))
                 .from(orderDetail)
                 .innerJoin(orderDetail.order, order)
-                .innerJoin(orderDetail.product, product)
+                .innerJoin(product)
+                .on(
+                        product.id.eq(orderDetail.productId)
+                )
                 .where(
-                        order.status.eq(Order.OrderStatus.PAYMENT_SUCCESS)
+                        order.status.eq(Order.OrderStatus.ORDER_COMPLETE)
                 )
                 .groupBy(
                         product.id,

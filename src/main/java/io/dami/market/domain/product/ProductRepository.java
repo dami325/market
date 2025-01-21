@@ -17,7 +17,7 @@ public interface ProductRepository {
 
     List<ProductResponse.Top5ProductDetails> getProductsTop5();
 
-    Map<Long, Product> findAllByIdWithLock(List<Long> orderProductIds);
+    List<Product> findAllByIdWithLock(Set<Long> orderProductIds);
 
     Product save(Product productA);
 

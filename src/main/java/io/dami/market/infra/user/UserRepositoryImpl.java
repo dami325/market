@@ -14,13 +14,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User getUser(Long userId) {
-        return userJpaRepository.findByIdWithFetch(userId)
-                .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 사용자."));
-    }
-
-    @Override
-    public User getUserWithLock(Long userId) {
-        return userJpaRepository.findByIdWithLock(userId)
+        return userJpaRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 사용자."));
     }
 
