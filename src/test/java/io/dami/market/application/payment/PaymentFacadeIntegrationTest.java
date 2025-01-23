@@ -6,6 +6,8 @@ import io.dami.market.domain.coupon.CouponRepository;
 import io.dami.market.domain.coupon.IssuedCoupon;
 import io.dami.market.domain.order.Order;
 import io.dami.market.domain.order.OrderCommand;
+import io.dami.market.domain.order.OrderDetail;
+import io.dami.market.domain.order.OrderRepository;
 import io.dami.market.domain.order.PaymentAlreadySuccessException;
 import io.dami.market.domain.payment.Payment;
 import io.dami.market.domain.point.Point;
@@ -16,6 +18,7 @@ import io.dami.market.domain.product.ProductRepository;
 import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;
 import io.dami.market.infra.coupon.IssuedCouponJpaRepository;
+import io.dami.market.infra.product.ProductJpaRepository;
 import io.dami.market.utils.IntegrationServiceTest;
 import io.dami.market.utils.fixture.CouponFixture;
 import io.dami.market.utils.fixture.PointFixture;
@@ -24,10 +27,15 @@ import io.dami.market.utils.fixture.UserCouponFixture;
 import io.dami.market.utils.fixture.UserFixture;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,6 +53,9 @@ public class PaymentFacadeIntegrationTest extends IntegrationServiceTest {
   private ProductRepository productRepository;
 
   @Autowired
+  private ProductJpaRepository productJpaRepository;
+
+  @Autowired
   private CouponRepository couponRepository;
 
   @Autowired
@@ -58,6 +69,9 @@ public class PaymentFacadeIntegrationTest extends IntegrationServiceTest {
 
   @Autowired
   private PointRepository pointRepository;
+
+  @Autowired
+  private OrderRepository orderRepository;
 
   @Test
   void 결제_주문상태_할인적용_결제금액_결제상태_검증_성공() {
@@ -227,5 +241,73 @@ public class PaymentFacadeIntegrationTest extends IntegrationServiceTest {
         .isEqualTo(Payment.PaymentStatue.SUCCESS); // 결제 상태 검증
     Assertions.assertThat(resultPayment.getTotalAmount())
         .isEqualTo(resultOrder.getTotalAmount()); // 결제금액 검증
+  }
+
+
+  @DisplayName("100명 동시 결제 시 상품별 재고 1000개 차감 검증")
+  @Test
+  void 동시_100명_결제_재고_검증() throws InterruptedException {
+    // given
+    int threads = 100;
+    int productCount = 3;
+
+    List<Product> products = new ArrayList<>();
+    Map<User, Order> userOrderMap = new HashMap<>();
+
+    for (int i = 0; i < productCount; i++) {
+      Product product = productRepository.save(Product.builder()
+          .name("product " + i)
+          .price(new BigDecimal("1000"))
+          .stockQuantity(1000)
+          .build());
+      products.add(product);
+    }
+
+    for (int i = 1; i <= threads; i++) {
+      User user = userRepository.save(User.builder()
+          .username("tester" + i)
+          .build());
+
+      pointRepository.save(Point.builder()
+          .totalPoint(new BigDecimal("100000"))
+          .userId(user.getId())
+          .build());
+
+      Order order = Order.createOrderForm(user.getId(), null);
+      for (Product product : products) {
+
+        OrderDetail orderDetail = OrderDetail.createOrderDetail(order, product.getId(), 10,
+            new BigDecimal("3000"));
+
+        order.addOrderDetail(orderDetail);
+      }
+      orderRepository.save(order);
+      userOrderMap.put(user, order);
+    }
+
+    ExecutorService executorService = Executors.newFixedThreadPool(threads);
+    CountDownLatch latch = new CountDownLatch(threads);
+
+    // when
+    for (Map.Entry<User, Order> entry : userOrderMap.entrySet()) {
+      executorService.submit(() -> {
+        try {
+          User user = entry.getKey();
+          Order order = entry.getValue();
+          paymentFacade.processOrderPayment(user.getId(), order.getId());
+        } finally {
+          latch.countDown();
+        }
+      });
+    }
+    latch.await();
+    executorService.shutdown();
+
+    // then
+    Set<Long> productIds = products.stream().map(Product::getId).collect(Collectors.toSet());
+    List<Product> result = productJpaRepository.findAllById(productIds);
+    for (Product product : result) {
+      Assertions.assertThat(product.getStockQuantity()).isEqualTo(0);
+    }
   }
 }
