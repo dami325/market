@@ -29,7 +29,7 @@ public class IssuedCoupon extends Auditor {
 
     @Comment("쿠폰 ID (외래 키)")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "coupon_id", nullable = false)
+    @JoinColumn(name = "coupon_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private Coupon coupon;
 
     @Comment("쿠폰 발급 일시")

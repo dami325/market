@@ -10,7 +10,7 @@ public interface CouponRepository {
 
     Coupon save(Coupon coupon);
 
-    Optional<IssuedCoupon> findIssuedCoupon(Long issuedCouponId);
+    Optional<IssuedCoupon> findIssuedCouponWithLock(Long issuedCouponId);
 
     List<Coupon> getCouponsByUserId(Long userId);
 }

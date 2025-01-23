@@ -15,18 +15,18 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PaymentFacade {
 
-    private final PaymentService paymentService;
-    private final ProductService productService;
-    private final PointService pointService;
-    private final OrderService orderService;
-    private final DataPlatform dataPlatform;
+  private final PaymentService paymentService;
+  private final ProductService productService;
+  private final PointService pointService;
+  private final OrderService orderService;
+  private final DataPlatform dataPlatform;
 
-    @Transactional
-    public void processOrderPayment(Long userId, Long orderId) {
-        Order order = orderService.getCompleteOrder(orderId);
-        productService.quantitySubtract(order.getProductQuantityMap());
-        Payment payment = paymentService.pay(orderId, order.getTotalAmount());
-        pointService.usePoints(userId, payment.getTotalAmount());
-        dataPlatform.publish(orderId, payment.getId());
-    }
+  @Transactional
+  public void processOrderPayment(Long userId, Long orderId) {
+    Order order = orderService.getCompleteOrder(orderId);
+    productService.quantitySubtract(order.getProductQuantityMap());
+    Payment payment = paymentService.pay(orderId, order.getTotalAmount());
+    pointService.usePoints(userId, payment.getTotalAmount());
+    dataPlatform.publish(orderId, payment.getId());
+  }
 }

@@ -28,11 +28,11 @@ public class CouponRepositoryImpl implements CouponRepository {
     }
 
     @Override
-    public Optional<IssuedCoupon> findIssuedCoupon(Long issuedCouponId) {
+    public Optional<IssuedCoupon> findIssuedCouponWithLock(Long issuedCouponId) {
         if (issuedCouponId == null) {
             return Optional.empty();
         }
-        return issuedCouponJpaRepository.findById(issuedCouponId);
+        return issuedCouponJpaRepository.findByIdWithLock(issuedCouponId);
     }
 
     @Override
