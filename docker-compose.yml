@@ -2,6 +2,7 @@ version: '3'
 services:
   mysql:
     image: mysql:8.0
+    container_name: market_mysql
     ports:
       - "13306:3306"
     environment:
@@ -11,6 +12,16 @@ services:
       - MYSQL_DATABASE=market
     volumes:
       - ./data/mysql/:/var/lib/mysql
+
+  redis:
+    image: redis:7.4.1
+    container_name: market_redis
+    ports:
+      - 16379:6379
+    volumes:
+      - ./data/redis/data:/data
+      - ./data/redis/config/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
 
 networks:
   default:
