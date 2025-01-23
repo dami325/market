@@ -292,7 +292,9 @@ erDiagram
 
 <details>
 <summary>API Swagger</summary>
-![api-swagger](https://github.com/user-attachments/assets/6a4419d8-09c0-4696-b537-32e878e031a8)
+
+![API Swagger Image](https://github.com/user-attachments/assets/78a4d9d8-5450-490b-99b6-b7db15d00da5)
+
 </details>
 
 <details>
