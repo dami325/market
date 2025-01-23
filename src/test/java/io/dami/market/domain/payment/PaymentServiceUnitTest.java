@@ -8,9 +8,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceUnitTest {
 
-    @InjectMocks
-    private PaymentService paymentService;
-    @Mock
-    private PaymentRepository paymentRepository;
+  @InjectMocks
+  private PaymentService paymentService;
+  @Mock
+  private PaymentRepository paymentRepository;
 
 }

@@ -9,11 +9,11 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest
 public abstract class IntegrationServiceTest {
 
-    @Autowired
-    private TestContainerDatabaseCleaner testContainerDatabaseCleaner;
+  @Autowired
+  private TestContainerDatabaseCleaner testContainerDatabaseCleaner;
 
-    @AfterEach
-    void init() {
-        testContainerDatabaseCleaner.execute();
-    }
+  @AfterEach
+  void init() {
+    testContainerDatabaseCleaner.execute();
+  }
 }
