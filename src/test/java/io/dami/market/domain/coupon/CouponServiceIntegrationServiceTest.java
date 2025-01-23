@@ -7,11 +7,13 @@ import io.dami.market.domain.user.UserRepository;
 import io.dami.market.utils.IntegrationServiceTest;
 import io.dami.market.utils.fixture.CouponFixture;
 import io.dami.market.utils.fixture.UserFixture;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -99,5 +101,42 @@ class CouponServiceIntegrationServiceTest extends IntegrationServiceTest {
     Assertions.assertThat(result.size()).isEqualTo(1);
   }
 
+  @DisplayName("선착순 쿠폰 발급 100명이 동시에 요청")
+  @Test
+  void 선착순_쿠폰_발급_100명() throws InterruptedException {
+    // given
+    int userCount = 100;
+    int totalQuantity = 100;
+    int issuedQuantity = 0;
+
+    List<User> users = new ArrayList<>();
+    for (int i = 1; i <= userCount; i++) {
+      users.add(userRepository.save(UserFixture.user("USER" + i)));
+    }
+
+    Coupon coupon = couponRepository.save(CouponFixture.coupon("새해쿠폰", totalQuantity,
+        issuedQuantity));
+
+    ExecutorService executorService = Executors.newFixedThreadPool(userCount);
+    CountDownLatch latch = new CountDownLatch(userCount);
+
+    // when
+    for (User user : users) {
+      executorService.submit(() -> {
+        try {
+          couponService.issueACoupon(coupon.getId(), user.getId());
+        } catch (IllegalArgumentException e) {
+          Assertions.assertThat(e.getMessage()).isEqualTo("같은 쿠폰은 하나만 발급 가능합니다.");
+        } finally {
+          latch.countDown();
+        }
+      });
+    }
+    latch.await();
+
+    // then
+    Coupon result = couponRepository.getCoupon(coupon.getId());
+    Assertions.assertThat(result.getIssuedQuantity()).isEqualTo(userCount);
+  }
 
 }

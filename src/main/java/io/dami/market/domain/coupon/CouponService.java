@@ -1,5 +1,6 @@
 package io.dami.market.domain.coupon;
 
+import io.dami.market.infra.redis.redisson.DistributedLock;
 import java.math.BigDecimal;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +18,10 @@ public class CouponService {
     return couponRepository.getFirstServedCoupons(userId);
   }
 
+  @DistributedLock(key = "'COUPON_' + #couponId")
   @Transactional
   public void issueACoupon(Long couponId, Long userId) {
-    Coupon coupon = couponRepository.getCouponWithLock(couponId);
+    Coupon coupon = couponRepository.getCoupon(couponId);
     coupon.issuedCoupon(userId);
   }
 

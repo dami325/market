@@ -4,13 +4,14 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CouponRepository {
-    Coupon getCouponWithLock(Long couponId);
 
-    List<Coupon> getFirstServedCoupons(Long userId);
+  Coupon getCoupon(Long couponId);
 
-    Coupon save(Coupon coupon);
+  List<Coupon> getFirstServedCoupons(Long userId);
 
-    Optional<IssuedCoupon> findIssuedCouponWithLock(Long issuedCouponId);
+  Coupon save(Coupon coupon);
 
-    List<Coupon> getCouponsByUserId(Long userId);
+  Optional<IssuedCoupon> findIssuedCouponWithLock(Long issuedCouponId);
+
+  List<Coupon> getCouponsByUserId(Long userId);
 }
