@@ -99,4 +99,39 @@ class PointServiceIntegrationTest extends IntegrationServiceTest {
 
   }
 
+  @DisplayName("특정 유저의 포인트 충전 동시에 10번 충전 정합성 검증")
+  @Test
+  void 특정_유저의_포인트_충전_동시에_10번() throws InterruptedException {
+    // given
+    int initPoint = 1500;
+    int chargePoint = 8000;
+    User user = userRepository.save(UserFixture.user("박주닮"));
+    pointRepository.save(PointFixture.point(user.getId(), initPoint));
+
+    int threads = 10;
+    ExecutorService executorService = Executors.newFixedThreadPool(threads);
+    CountDownLatch latch = new CountDownLatch(threads);
+
+    // when
+    for (int i = 0; i < threads; i++) {
+      executorService.submit(() -> {
+        try {
+          pointService.chargePoint(user.getId(), BigDecimal.valueOf(chargePoint));
+        } finally {
+          latch.countDown();
+        }
+      });
+    }
+    latch.await();
+    executorService.shutdown();
+
+    // then
+    Point resultPoint = pointRepository.getPointByUserId(user.getId());
+    Assertions.assertThat(
+            resultPoint.getTotalPoint()
+                .compareTo(BigDecimal.valueOf(chargePoint * threads + initPoint)))
+        .isEqualTo(0);
+
+  }
+
 }
