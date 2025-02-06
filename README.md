@@ -328,3 +328,4 @@ E-Commerce 플랫폼 서버를 **제로부터 완성**하는 프로젝트가 어
 </details>
 
 - ### [주요 비즈니스 동시성 제어 방식과 장단점 분석](https://dami325.notion.site/E-Commerce-182b8b5e484c80e8a279d3b1e28e8906?pvs=4)
+- ### [Redis 캐시 전략 정리 및 성능 개선 분석](https://dami325.notion.site/e-Redis-18ab8b5e484c8092bc7ed13b0d5a818b?pvs=4)
