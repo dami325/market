@@ -40,6 +40,11 @@ public class CouponRepositoryImpl implements CouponRepository {
   }
 
   @Override
+  public List<Coupon> findAllAvailableCoupons() {
+    return couponJpaRepository.findAllAvailableCoupons();
+  }
+
+  @Override
   public Coupon getCoupon(Long couponId) {
     return couponJpaRepository.findById(couponId)
         .orElseThrow(() -> new EntityNotFoundException("쿠폰을 찾을 수 없음"));
