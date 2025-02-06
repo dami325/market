@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +39,7 @@ public class ProductService {
     return productRepository.getProduct(productId);
   }
 
+  @Cacheable(value = "top5ProductDetails", key = "'top5'", cacheManager = "redisCacheManager")
   @Transactional(readOnly = true)
   public List<ProductResponse.Top5ProductDetails> getProductsTop5() {
     return productRepository.getProductsTop5();

@@ -1,24 +1,58 @@
 package io.dami.market.infra.redis.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+@EnableCaching
 @Configuration
 @RequiredArgsConstructor
 public class RedisConfig {
 
   private final RedisProperties redisProperties;
   private static final String REDISSON_HOST_PREFIX = "redis://";
+
+  @Bean
+  public CacheManager redisCacheManager() {
+    RedisCacheManager.RedisCacheManagerBuilder builder = RedisCacheManager
+        .RedisCacheManagerBuilder
+        .fromConnectionFactory(redisConnectionFactory());
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new JavaTimeModule()); // LocalDateTime 지원
+    objectMapper.activateDefaultTyping(
+        objectMapper.getPolymorphicTypeValidator(),
+        ObjectMapper.DefaultTyping.NON_FINAL
+    );
+
+    RedisCacheConfiguration configuration = RedisCacheConfiguration
+        .defaultCacheConfig()
+        .serializeKeysWith(
+            RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
+        .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
+            new GenericJackson2JsonRedisSerializer(objectMapper)))
+        .entryTtl(Duration.ofMinutes(90));
+    builder.cacheDefaults(configuration);
+    return builder.build();
+  }
 
   /**
    * Redis 와의 연결을 위한 'Connection'을 생성합니다.
@@ -40,8 +74,8 @@ public class RedisConfig {
    * @return
    */
   @Bean
-  public RedisTemplate<String, Object> redisTemplate() {
-    RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+  public RedisTemplate<String, String> redisTemplate() {
+    RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
 
     // Redis를 연결합니다.
     redisTemplate.setConnectionFactory(redisConnectionFactory());
