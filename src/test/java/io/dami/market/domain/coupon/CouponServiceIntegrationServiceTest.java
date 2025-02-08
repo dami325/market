@@ -9,13 +9,17 @@ import io.dami.market.utils.fixture.CouponFixture;
 import io.dami.market.utils.fixture.UserFixture;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.transaction.annotation.Transactional;
 
 class CouponServiceIntegrationServiceTest extends IntegrationServiceTest {
@@ -28,6 +32,12 @@ class CouponServiceIntegrationServiceTest extends IntegrationServiceTest {
 
   @Autowired
   private CouponRepository couponRepository;
+
+  @Autowired
+  private RedisTemplate<String, String> redisTemplate;
+
+  private static final String COUPON_REQUEST_KEY = "coupon-%d-requests";
+  private static final String COUPON_ISSUED_KEY = "coupon-%d-issued";
 
   @Test
   void 선착순_발급_가능_쿠폰_조회_성공() {
@@ -139,4 +149,41 @@ class CouponServiceIntegrationServiceTest extends IntegrationServiceTest {
     Assertions.assertThat(result.getIssuedQuantity()).isEqualTo(userCount);
   }
 
+
+  @Test
+  void 선착순_쿠폰_발급요청_레디스저장_테스트() {
+    // given
+    User user = userRepository.save(UserFixture.user("박주닮"));
+    Coupon coupon = couponRepository.save(CouponFixture.coupon("새해쿠폰"));
+
+    // when
+    couponService.issueACouponRedis(coupon.getId(), user.getId());
+
+    // then
+    String requestKey = String.format(COUPON_REQUEST_KEY, coupon.getId());
+    Set<String> result = redisTemplate.opsForZSet()
+        .popMin(requestKey, coupon.getTotalQuantity() - coupon.getIssuedQuantity())
+        .stream().map(TypedTuple::getValue)
+        .collect(Collectors.toSet());
+    Assertions.assertThat(result.size()).isEqualTo(1);
+  }
+
+  @Test
+  void 선착순_쿠폰_발급_레디스_테스트() {
+    // given
+    User user = userRepository.save(UserFixture.user("박주닮"));
+    Coupon coupon = couponRepository.save(CouponFixture.coupon("새해쿠폰"));
+    couponService.issueACouponRedis(coupon.getId(), user.getId());
+    int beforeIssuedQuantity = coupon.getIssuedQuantity();
+
+    // when
+    couponService.processCouponIssuance(coupon.getId(),
+        coupon.getTotalQuantity() - beforeIssuedQuantity);
+
+    // then
+    int issuedQuantity = couponRepository.getCoupon(coupon.getId())
+        .getIssuedQuantity();
+    Assertions.assertThat(issuedQuantity).isEqualTo(beforeIssuedQuantity + 1);
+    
+  }
 }

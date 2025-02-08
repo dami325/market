@@ -28,4 +28,13 @@ public interface CouponJpaRepository extends JpaRepository<Coupon, Long> {
       WHERE issued.userId = :userId
       """)
   List<Coupon> getCouponsByUserId(Long userId);
+
+  @Query("""
+        SELECT c
+        FROM Coupon c
+        WHERE c.issuedQuantity < c.totalQuantity
+        AND c.endDate > now()
+      """)
+  List<Coupon> findAllAvailableCoupons();
+
 }
