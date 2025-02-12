@@ -13,7 +13,7 @@
 ### 프로젝트 기간
 
 - 2024-12-29 ~ 2025-01-16 (총 16 MD)
-- 
+
 ### 총 소요 기간
 
 총 16 MD (Man-days)
@@ -143,6 +143,7 @@ sequenceDiagram
 
 <details>
 <summary>테이블 설계</summary>
+    
 # ERD
 
 ```mermaid
