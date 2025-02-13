@@ -3,6 +3,7 @@ package io.dami.market.infra.dummy;
 import io.dami.market.domain.coupon.Coupon;
 import io.dami.market.domain.coupon.CouponRepository;
 import io.dami.market.domain.order.Order;
+import io.dami.market.domain.order.Order.OrderStatus;
 import io.dami.market.domain.order.OrderDetail;
 import io.dami.market.domain.order.OrderRepository;
 import io.dami.market.domain.payment.PaymentRepository;
@@ -45,13 +46,17 @@ public class LocalDummyData {
         .totalQuantity(500)
         .build());
 
-    List<Product> products = new ArrayList<>();
-    for (int i = 0; i < 3; i++) {
-      Product product = productRepository.save(Product.builder()
+    for (int i = 0; i < 100000; i++) {
+      productRepository.save(Product.builder()
           .name("product " + i)
           .price(new BigDecimal("1000"))
           .stockQuantity(1000)
           .build());
+    }
+
+    List<Product> products = new ArrayList<>();
+    for (Long i = 1L; i <= 100000; i++) {
+      Product product = productRepository.getProduct(i);
       products.add(product);
     }
 
@@ -75,12 +80,24 @@ public class LocalDummyData {
 
       coupon.issuedCoupon(user.getId());
 
-      Order order = orderRepository.save(Order.createOrderForm(user.getId(), null));
-      for (Product product : products) {
+      Order order = orderRepository.save(Order.builder()
+          .userId(user.getId())
+          .issuedCouponId(null)
+          .status(user.getId() % 2 == 0 ? OrderStatus.ORDER_COMPLETE : OrderStatus.ORDER_CANCELLED)
+          .build());
 
+      int count = 0;
+      while (true) {
+        Long productIndex = (long) (Math.random() * 100000);
+        if (count == 5) {
+          break;
+        }
+        count++;
         order.addOrderDetail(
-            OrderDetail.createOrderDetail(order, product.getId(), 10, new BigDecimal("3000")));
+            OrderDetail.createOrderDetail(order, productIndex, (int) (Math.random() * 1001),
+                new BigDecimal("3000")));
       }
     }
   }
+
 }
