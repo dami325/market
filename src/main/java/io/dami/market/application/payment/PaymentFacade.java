@@ -6,8 +6,8 @@ import io.dami.market.domain.payment.Payment;
 import io.dami.market.domain.payment.PaymentService;
 import io.dami.market.domain.point.PointService;
 import io.dami.market.domain.product.ProductService;
-import io.dami.market.infra.dataplatform.DataPlatform;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +19,7 @@ public class PaymentFacade {
   private final ProductService productService;
   private final PointService pointService;
   private final OrderService orderService;
-  private final DataPlatform dataPlatform;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional
   public void processOrderPayment(Long userId, Long orderId) {
@@ -27,6 +27,6 @@ public class PaymentFacade {
     productService.quantitySubtract(order.getProductQuantityMap());
     Payment payment = paymentService.pay(orderId, order.getTotalAmount());
     pointService.usePoints(userId, payment.getTotalAmount());
-    dataPlatform.publish(orderId, payment.getId());
+    eventPublisher.publishEvent(new PaymentCompleteEvent(orderId, payment.getId()));
   }
 }

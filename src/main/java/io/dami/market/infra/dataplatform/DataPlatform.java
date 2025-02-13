@@ -1,5 +1,6 @@
 package io.dami.market.infra.dataplatform;
 
+import io.dami.market.application.payment.PaymentCompleteEvent;
 import org.springframework.stereotype.Component;
 
 /**
@@ -8,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public interface DataPlatform {
 
-    // 주문 정보 전송
-    void publish(Long orderId, Long paymentId);
+  // 주문 정보 전송
+  void publish(PaymentCompleteEvent event);
 
 }
