@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,68 +35,75 @@ public class LocalDummyData {
   private final ProductRepository productRepository;
   private final UserRepository userRepository;
 
+  @Value("${dummy-data}")
+  private boolean initDummy;
+
   @Transactional
   public void init() {
-    int userCount = 500;
+    if (initDummy) {
 
-    couponRepository.save(Coupon.builder()
-        .name("선착순쿠폰")
-        .endDate(LocalDateTime.now().plusDays(5))
-        .issuedQuantity(0)
-        .discountAmount(new BigDecimal("1000"))
-        .totalQuantity(500)
-        .build());
+      int userCount = 500;
 
-    for (int i = 0; i < 100000; i++) {
-      productRepository.save(Product.builder()
-          .name("product " + i)
-          .price(new BigDecimal("1000"))
-          .stockQuantity(1000)
-          .build());
-    }
-
-    List<Product> products = new ArrayList<>();
-    for (Long i = 1L; i <= 100000; i++) {
-      Product product = productRepository.getProduct(i);
-      products.add(product);
-    }
-
-    for (int i = 1; i <= userCount; i++) {
-      User user = userRepository.save(User.builder()
-          .username("tester" + i)
-          .build());
-
-      pointRepository.save(Point.builder()
-          .totalPoint(new BigDecimal("100000"))
-          .userId(user.getId())
-          .build());
-
-      Coupon coupon = couponRepository.save(Coupon.builder()
-          .name("coupon" + i)
+      couponRepository.save(Coupon.builder()
+          .name("선착순쿠폰")
           .endDate(LocalDateTime.now().plusDays(5))
           .issuedQuantity(0)
           .discountAmount(new BigDecimal("1000"))
-          .totalQuantity(100)
+          .totalQuantity(500)
           .build());
 
-      coupon.issuedCoupon(user.getId());
+      for (int i = 0; i < 100000; i++) {
+        productRepository.save(Product.builder()
+            .name("product " + i)
+            .price(new BigDecimal("1000"))
+            .stockQuantity(1000)
+            .build());
+      }
 
-      Order order = orderRepository.save(Order.builder()
-          .userId(user.getId())
-          .issuedCouponId(null)
-          .status(user.getId() % 2 == 0 ? OrderStatus.ORDER_COMPLETE : OrderStatus.ORDER_CANCELLED)
-          .build());
+      List<Product> products = new ArrayList<>();
+      for (Long i = 1L; i <= 100000; i++) {
+        Product product = productRepository.getProduct(i);
+        products.add(product);
+      }
 
-      int count = 0;
-      while (true) {
-        Long productIndex = (long) (Math.random() * 100000);
-        if (count == 5) {
-          break;
+      for (int i = 1; i <= userCount; i++) {
+        User user = userRepository.save(User.builder()
+            .username("tester" + i)
+            .build());
+
+        pointRepository.save(Point.builder()
+            .totalPoint(new BigDecimal("100000"))
+            .userId(user.getId())
+            .build());
+
+        Coupon coupon = couponRepository.save(Coupon.builder()
+            .name("coupon" + i)
+            .endDate(LocalDateTime.now().plusDays(5))
+            .issuedQuantity(0)
+            .discountAmount(new BigDecimal("1000"))
+            .totalQuantity(100)
+            .build());
+
+        coupon.issuedCoupon(user.getId());
+
+        Order order = orderRepository.save(Order.builder()
+            .userId(user.getId())
+            .issuedCouponId(null)
+            .status(
+                user.getId() % 2 == 0 ? OrderStatus.ORDER_COMPLETE : OrderStatus.ORDER_CANCELLED)
+            .build());
+
+        int count = 0;
+        while (true) {
+          Long productIndex = (long) (Math.random() * 100000);
+          if (count == 5) {
+            break;
+          }
+          count++;
+          order.addOrderDetail(
+              OrderDetail.createOrderDetail(order, productIndex, (int) (Math.random() * 1001),
+                  new BigDecimal("3000")));
         }
-        count++;
-        order.addOrderDetail(
-            OrderDetail.createOrderDetail(order, productIndex, (int) (Math.random() * 1001),
-                new BigDecimal("3000")));
       }
     }
   }
