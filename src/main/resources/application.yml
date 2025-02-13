@@ -48,3 +48,5 @@ logging:
   level:
     root: info
     org.hibernate.orm.jdbc.bind: trace
+
+dummy-data: false
