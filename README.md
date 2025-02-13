@@ -1557,3 +1557,220 @@ type을 먼저 확인해보면 ALL → range로 범위 검색이 가능해 진 �
 - [Real Mysql 8.0 1권](https://product.kyobobook.co.kr/detail/S000001766482)
 
 </details>
+
+<details>
+<summary>MSA로 전환을 위한 결제 서비스 분리 및 트랜잭션 처리 방안 설계</summary>
+
+# 개요
+
+E-커머스 결제 서비스의 트랜잭션 범위가 너무 길게 설정되어 있으며, Payment 애플리케이션 로직에서 결제에 필요한 부가적인 작업(재고 차감, 포인트 차감 등)을 함께 처리하고 있어 서비스 확장성이 낮고 대량 트래픽에 적합하지 않습니다.
+
+이에 따라 MSA 구조로 전환하는 방안을 설계하고, 이벤트 기반 처리 구조에서 발생하는 트랜잭션 문제와 해결 방안을 학습하기 위한 글입니다.
+<br><br>
+
+# 기존 결제 시스템 분석
+
+> PaymentFacade.java
+> 
+
+```java
+@Component
+@RequiredArgsConstructor
+public class PaymentFacade {
+
+  private final PaymentService paymentService;
+  private final ProductService productService;
+  private final PointService pointService;
+  private final OrderService orderService;
+  private final DataPlatform dataPlatform;
+
+  @Transactional
+  public void processOrderPayment(Long userId, Long orderId) {
+    Order order = orderService.getCompleteOrder(orderId);
+    productService.quantitySubtract(order.getProductQuantityMap());
+    Payment payment = paymentService.pay(orderId, order.getTotalAmount());
+    pointService.usePoints(userId, payment.getTotalAmount());
+    dataPlatform.publish(orderId, payment.getId());
+  }
+}
+```
+
+<br><br>
+
+### 메서드 요약
+
+간단히 설명하면, 결제 API 요청 시 해당 파사드의 메서드를 호출하여 주문의 상태 정보를 조회하고, 재고를 차감한 뒤 결제를 진행하며, 포인트를 차감한 후, 주문 정보를 데이터 플랫폼에 저장하기 위한 외부 API를 호출하는 방식으로 동작합니다.
+
+<br><br>
+
+### 문제 상황
+
+**데이터 수집 플랫폼 API의 응답 지연 문제**
+
+- 주문 데이터를 데이터 수집 플랫폼으로 전달하는 API의 응답 지연이 발생하면, 결제 프로세스 전체가 지연되는 문제가 발생합니다.
+
+**트랜잭션 범위가 과도하게 넓음**
+
+- 현재 파사드에 `@Transactional`이 적용되어 있어 트랜잭션 범위가 지나치게 길게 설정되어 있습니다.
+- 데이터 수집 플랫폼 API 호출이 포함되어 있어 외부 시스템의 지연이나 장애가 핵심 비즈니스 로직(결제)에도 영향을 미치는 구조입니다.
+- 데이터 수집 플랫폼의 API 호출이 실패하면, 결제 및 주문 처리가 정상적으로 완료되었더라도 전체 트랜잭션이 롤백되는 문제가 있습니다.
+
+**데이터 정합성 문제**
+
+- 데이터 수집 플랫폼에는 정상적으로 주문 정보가 저장되었으나, 결제 과정에서 FLUSH 중 오류가 발생하면, 실제 결제가 이루어지지 않았음에도 데이터 수집 플랫폼에는 정상적인 주문 데이터가 전달되는 불일치 문제가 발생할 가능성이 있습니다.
+
+<br><br>
+
+### 핵심 문제 정리
+
+- 외부 API의 응답 지연이 결제 프로세스를 블로킹함
+- 트랜잭션 범위가 과도하게 넓어 서비스 확장성과 장애 대응이 어렵다
+- 데이터 정합성이 깨질 가능성이 있으며, 결제 실패 시 외부 시스템에 잘못된 데이터가 저장될 위험이 있음
+
+<br><br>
+
+# 서비스 분리 설계 및 트랜잭션 처리의 한계
+
+위의 `processOrderPayment` 메서드에서 호출하는 각 서비스는 서로 다른 도메인에 속하기 때문에, 도메인별로 배포 단위를 분리해야 한다고 가정하면, 서비스별로 독립적인 트랜잭션을 유지할 수 있도록 설계할 필요가 있습니다.
+
+즉, 주문 상태 관리, 재고 차감, 결제 처리, 포인트 차감, 데이터 수집 플랫폼 전송 등의 기능을 각각의 독립적인 서비스로 분리하고, 각 서비스의 트랜잭션을 개별적으로 관리하는 방식으로 설계해야 합니다.
+
+> 트랜잭션 분리 설계
+> 
+
+```java
+주문_TX() {
+	주문_조회();
+}
+상품_TX() {
+	재고_차감();
+}
+결제_TX() {
+	결제_정보_생성();
+}
+포인트_TX() {
+	포인트_차감();
+}
+데이터_플랫폼_TX() {
+	주문_결제_정보_전송();
+}
+```
+
+이렇게 설계하면 데이터 플랫폼 전송이 다른 트랜잭션에 영향을 주지 않게 되며, 각 도메인이 개별적인 트랜잭션을 가지므로 트랜잭션 범위를 짧게 유지할 수 있습니다.
+
+> 트랜잭션 처리의 한계
+> 
+
+하지만 트랜잭션이 분리된 구조에서는 데이터 정합성을 보장하기 어려우며, 일부 서비스가 실패할 경우 전체 프로세스를 원자적으로 유지하는 것이 어려울 수 있습니다.
+
+특히, 재고 차감 후 결제가 실패하는 경우, 이미 감소된 재고를 복구하는 처리가 필요하며, 각 단계가 성공적으로 완료되지 않으면 전체적으로 앞의 단계를 롤백할 수 있는 작업이 필요합니다. (재고 복구 등)
+
+<br><br>
+
+# 해결방안
+
+### SAGA 패턴
+
+SAGA 패턴이란 마이크로서비스들끼리 이벤트를 주고 받아 특정 마이크로서비스에서의 작업이 실패하면 이전까지의 작업이 완료된 마이크서비스들에게 보상 (complemetary) 이벤트를 소싱함으로써 분산 환경에서 원자성(atomicity)을 보장하는 패턴입니다.
+
+아래는 SAGA 패턴의 동작 과정입니다.
+
+<br><br>
+
+### SAGA 패턴의 이벤트 성공 시 동작 과정
+
+![image](https://github.com/user-attachments/assets/d1399192-e753-472c-abf1-c32cf9d9ddce)
+
+
+<br><br>
+
+### SAGA 패턴의 이벤트 실패 시 동작 과정
+
+![image](https://github.com/user-attachments/assets/7b58edf5-a5e0-4fc8-8e92-95017392bf31)
+
+
+<br><br>
+
+### SAGA 패턴의 핵심 개념
+
+SAGA 패턴에서는 트랜잭션 관리가 DBMS가 아닌 애플리케이션 레벨에서 이루어지며, 각 서비스는 개별적인 로컬 트랜잭션만 담당합니다.
+
+즉, 분산된 환경에서 트랜잭션의 실패로 인한 롤백은 각 애플리케이션에서 직접 구현해야 하며, DBMS의 글로벌 트랜잭션이 아닌 애플리케이션 간 이벤트 기반으로 트랜잭션의 흐름을 제어합니다.
+
+이러한 구조를 통해 트랜잭션이 순차적으로 처리되며, 최종 단계에서 모든 프로세스가 완료되었을 때 데이터가 영속적으로 저장됩니다.
+
+이를 통해 분산 환경에서도 데이터 정합성을 유지하면서 일관성을 보장할 수 있습니다.
+
+<br><br>
+
+### 코레오그래피(Choreography) 기반 SAGA 패턴
+
+```mermaid
+sequenceDiagram
+    participant App1
+    participant EventBus1
+    participant App2
+    participant EventBus2
+    participant App3
+
+    App1->>App1: Local 트랜잭션 수행
+    App1->>EventBus1: 트랜잭션 완료 이벤트 발행
+    EventBus1-->>App2: 이벤트 전달
+    App2->>App2: Local 트랜잭션 수행
+    App2->>EventBus2: 트랜잭션 완료 이벤트 발행
+    EventBus2-->>App3: 이벤트 전달
+    App3->>App3: Local 트랜잭션 수행
+    App3->>App1: 최종 완료 이벤트 전달
+    App1->>App1: 전체 트랜잭션 완료
+
+```
+
+<br><br>
+
+### **Choreography-based Saga 패턴 개요**
+
+Choreography-based Saga 패턴에서는 각 서비스가 자체적으로 Local 트랜잭션을 관리하며, 트랜잭션이 완료되면 이벤트를 발행합니다.
+
+이벤트를 수신한 다음 서비스는 해당 이벤트를 기반으로 트랜잭션을 수행하고, 완료 후 다시 이벤트를 발행하는 방식으로 프로세스를 이어갑니다.
+
+이러한 이벤트 흐름은 Kafka와 같은 메시지 큐를 활용하여 비동기적으로 전달할 수 있으며, 중앙 오케스트레이션 없이도 서비스 간 트랜잭션을 순차적으로 처리할 수 있습니다.
+
+<br><br>
+
+### E 커머스 결제 로직에 **Choreography-based Saga 패턴** 적용 예시
+
+1. OrderService(주문 서비스)가 주문을 조회하고, 주문 완료 이벤트를 발행
+2. ProductService(상품 서비스)는 주문 완료 이벤트를 받아 재고 차감 후, 완료 이벤트를 발행
+3. PaymentService(결제 서비스)는 재고 차감 완료 이벤트를 받아 결제 정보를 생성하고 완료 이벤트를 발행
+4. PointService(포인트 서비스)는 결제 완료 이벤트를 받아 포인트 차감 후 완료 이벤트를 발행
+5. DataPlatformService(데이터 플랫폼)는 포인트 차감 완료 이벤트를 받아 주문 데이터를 외부로 전송
+6. 모든 트랜잭션이 완료되면 OrderService가 최종 완료를 확인하고 프로세스를 종료
+
+<br><br>
+
+### 장점
+
+- 구현이 간단하고 편합니다.
+
+<br><br>
+
+### 단점
+
+- 개발자 입장에서 트랜잭션의 현재 상태를 확인하기 어렵습니다.
+
+<br><br>
+
+# 결론
+
+트랜잭션을 분리할 경우, 항상 실패 상황을 고려하고 이에 대한 적절한 트랜잭션 처리 방안을 마련하는 것이 중요합니다.
+
+이번 학습에서는 기존 E-커머스의 결제 로직을 참고하여 MSA 아키텍처로 변환하는 과정을 가정하였으며, MSA 환경에서 가장 널리 사용되는 트랜잭션 관리 패턴인 Saga 패턴에 대해 학습할 수 있었습니다.
+
+<br><br>
+
+# 참고 자료
+
+- https://azderica.github.io/01-architecture-msa/
+- [https://github.com/rueun/hhplus-concert-reservation/blob/main/docs/MSA_TRANSACTION.md#서비스-분리-및-주요-담당-업무](https://github.com/rueun/hhplus-concert-reservation/blob/main/docs/MSA_TRANSACTION.md#%EC%84%9C%EB%B9%84%EC%8A%A4-%EB%B6%84%EB%A6%AC-%EB%B0%8F-%EC%A3%BC%EC%9A%94-%EB%8B%B4%EB%8B%B9-%EC%97%85%EB%AC%B4)
+
+</details>
