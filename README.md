@@ -1354,3 +1354,206 @@ for (String failedUser : failedUsers) {
 
 </details>
 
+<details>
+<summary>상위 상품 조회 인덱스 적용 성능 개선 분석</summary>
+
+# 인덱스 적용 성능 개선 분석
+
+<br><br>
+
+### 개요
+
+E커머스 프로젝트의 꽃은 비즈니스 상품의 조회 성능이라고 생각합니다. 이 글은 E 커머스 프로젝트를 개발하며 상위 상품 조회를 인덱스를 추가하기 전과 추가한 후 쿼리의 성능 개선 정도를 파악하며 학습하기 위한 글입니다.
+<br><br>
+
+### 인덱스란? 인덱스를 적용하는 이유는?
+
+**추가적인 쓰기 작업과 저장 곤간을 활용하여 데이터베이스 테이블의 검색 속도를 향상시키기 위한 자료구조** 
+
+인덱스는 특정 열 값이 있는 행을 빠르게 찾는 데 사용됩니다. 인덱스가 없으면 데이터베이스는 첫 번째 행부터 시작하여 전체 테이블을 읽어 관련 행을 찾아야 합니다. 테이블에 해당 열에 대한 인덱스가 있는 경우 데이터베이스는 모든 데이터를 살펴보지 않고도 데이터 파일 중간에서 찾을 위치를 빠르게 결정할 수 있습니다. 이는 모든 행을 순차적으로 읽는 것보다 훨씬 빠릅니다. 
+<br><br>
+
+### 일상 생활의 예시
+
+우리가 책에서 원하는 내용을 찾고 싶으면 한장한장 넘겨보는게 아닌 책의 맨 앞 또는 맨 뒤에 색인을 찾아보는 것처럼, 데이터베이스에서도 데이터와 데이터의 위치를 포함한 자료구조를 생성하여 빠르게 조회할 수 있도록 돕고 있습니다.
+<br><br>
+
+### 그럼 모든 필드 인덱스 적용하면 좋은거 아니에요?
+
+> 항해 백엔드 7기 QnA 내용 일부
+> 
+
+결론부터 말하면 **그렇지 않습니다.** 여러 문서를 참고했을 때 대략 인덱스가 없는 기본적인 테이블의 쓰기 비용을 1이라고 잡았을 경우 해당 테이블의 인덱스에 키를 추가하는 작업 비용을 1.5 정도로 예측합니다. 즉 테이블에 인덱스가 3개가 있다면 작업 비용이 3 * 1.5 + 1 = 5.5 정도 됩니다. (약 5배) 즉, **쓰기 작업보다 조회 작업이 압도적으로 많은 상품 조회와 같은 쿼리에 사용되는 테이블에 추가하기 적합**합니다.
+
+이제 상위 상품 조회에 인덱스 추가 전후 실행계획을 비교해보며 인덱스를 적용해 보겠습니다.
+<br><br>
+
+### 상위 상품 조회
+
+주문이 완료된 상품들의 주문 수량의 합이 가장 큰 상품 5개를 가져오는 쿼리
+
+> ProductQuerydslRepository.java
+> 
+
+```java
+public List<ProductResponse.Top5ProductDetails> getProductsTop5() {
+  return queryFactory
+      .select(new QProductResponse_Top5ProductDetails(
+          product.id,
+          product.name,
+          product.price,
+          product.stockQuantity,
+          orderDetail.quantity.sum()
+      ))
+      .from(orderDetail)
+      .innerJoin(orderDetail.order, order)
+      .innerJoin(product)
+      .on(
+          product.id.eq(orderDetail.productId)
+      )
+      .where(
+          order.status.eq(Order.OrderStatus.ORDER_COMPLETE),
+          order.createdAt.between(LocalDateTime.now().minusDays(3), LocalDateTime.now())
+      )
+      .groupBy(
+          product.id,
+          product.name,
+          product.price,
+          product.stockQuantity
+      )
+      .orderBy(orderDetail.quantity.sum().desc())
+      .limit(5)
+      .fetch();
+}
+```
+
+> 쿼리 결과
+> 
+
+```java
+select
+        p1_0.id,
+        p1_0.name,
+        p1_0.price,
+        p1_0.stock_quantity,
+        sum(od1_0.quantity) 
+    from
+        order_detail od1_0 
+    join
+        orders o1_0 
+            on o1_0.id=od1_0.order_id 
+    join
+        product p1_0 
+            on p1_0.id=od1_0.product_id 
+    where
+        o1_0.status='ORDER_COMPLETE'
+        and o1_0.created_at between '2025-02-11' and '2025-02-14'
+    group by
+        p1_0.id,
+        p1_0.name,
+        p1_0.price,
+        p1_0.stock_quantity 
+    order by
+        sum(od1_0.quantity) desc 
+    limit
+        5
+```
+
+```sql
+id   |name         |price  |stock_quantity|sum(od1_0.quantity)|
+-----+-------------+-------+--------------+-------------------+
+ 2712|product 2711 |1000.00|          1000|               1804|
+19509|product 19508|1000.00|          1000|               1000|
+34743|product 34742|1000.00|          1000|                999|
+40511|product 40510|1000.00|          1000|                998|
+ 8206|product 8205 |1000.00|          1000|                998|
+```
+
+이제 위의 쿼리에 대해 실행 계획을 확인해 보겠습니다.
+<br><br>
+
+### 실행 계획이란?
+
+MySQL 서버로 요청된 쿼리는 결과는 동일하지만 내부적으로 그 결과를 만들어내는 방법은 매우 다양한데, 우리가 여행을 할 때도 인터넷이나 책 등을 참고해서 최소한의 비용이 드는 효율적인 여행 경로를 결정하듯이 MySQL에서도 쿼리를 최적으로 실행하기 위해 각 테이블의 데이터가 어떤 분포로 저장돼 있는지 통계 정보를 참조하며 실행 계획을 수립하는 작업이 필요합니다.
+
+MySQL 에서는 EXPLAIN이라는 명령으로 쿼리의 실행 계획을 확인할 수 있습니다.
+
+> 실행 계획 컬럼 설명
+> 
+
+| 컬럼 | 설명 |
+| --- | --- |
+| `id` | 실행 순서를 나타냄. 숫자가 클수록 먼저 실행 |
+| `select_type` | 쿼리 유형 (SIMPLE, SUBQUERY, DERIVED 등) |
+| `table` | 접근하는 테이블 이름 |
+| `partitions` | 사용된 파티션 (일반적으로 비어 있음) |
+| `type` | 조회 방식 (ALL, INDEX, RANGE, REF, EQ_REF 등) |
+| `possible_keys` | 사용할 수 있는 인덱스 목록 |
+| `key` | 실제 사용된 인덱스 |
+| `key_len` | 인덱스 길이 |
+| `ref` | 조인된 테이블의 어떤 컬럼이 사용되었는지 |
+| `rows` | MySQL이 예상하는 처리할 행 개수 |
+| `filtered` | 필터링 후 남는 행의 비율 (%) |
+| `Extra` | 추가적인 정보 (Using where, Using filesort 등) |
+
+> 실행 계획 확인
+> 
+
+```sql
+id|select_type|table|partitions|type  |possible_keys              |key                        |key_len|ref                    |rows|filtered|Extra                                       |
+--+-----------+-----+----------+------+---------------------------+---------------------------+-------+-----------------------+----+--------+--------------------------------------------+
+ 1|SIMPLE     |o1_0 |          |ALL   |PRIMARY                    |                           |       |                       | 500|    5.56|Using where; Using temporary; Using filesort|
+ 1|SIMPLE     |od1_0|          |ref   |FKrws2q0si6oyd6il8gqe2aennc|FKrws2q0si6oyd6il8gqe2aennc|8      |market.o1_0.id         |   1|   100.0|                                            |
+ 1|SIMPLE     |p1_0 |          |eq_ref|PRIMARY                    |PRIMARY                    |8      |market.od1_0.product_id|   1|   100.0|                                            |
+```
+
+실행 계획에서 type 열은 테이블을 어떻게 조회하는지를 나타내며, 가장 중요한 성능 지표 중 하나입니다. 
+
+위의 쿼리를 보면 테이블 풀 스캔으로 전체 데이터를 탐색하는 것을 확인할 수 있습니다. 또한, filtered 를 보면 5.56%로 필터링 후 남는 비율을 나타내는데 이것으로 얼마나 비효율 적인지 파악할 수 있습니다.
+<br><br>
+
+### 상위 상품 조회 실행 계획 핵심 요약
+
+1. order 테이블의 테이블 Full Scan
+2. 비효율 적인 where절 필터링
+<br><br>
+
+
+### 최적화 방법 (인덱스 추가)
+
+```sql
+ALTER TABLE orders ADD INDEX idx_status_created_at (status, created_at);
+```
+
+위와 같이 복합 인덱스를 적용한 근거는 주문의 상태는 카디널리티가 낮지만 먼저 필터링 조건에 사용되며 뒤에 있는 created_at이 카디널리티가 높으므로 위와 같은 순서로 복합 인덱스를 적용해야 효율적으로 정렬되어 있는 많은 데이터 중 상태를 먼저 거른 후 상태에 맞게 정렬되어 있는 날짜를 탐색할 거로 생각했기 때문입니다.
+
+인덱스를 추가한 후 실행 계획이 어떻게 변했는지 확인해 보겠습니다.
+
+> 실행 계획 확인
+> 
+
+```sql
+id|select_type|table|partitions|type  |possible_keys                |key                        |key_len|ref                    |rows|filtered|Extra                                                    |
+--+-----------+-----+----------+------+-----------------------------+---------------------------+-------+-----------------------+----+--------+---------------------------------------------------------+
+ 1|SIMPLE     |o1_0 |          |range |PRIMARY,idx_status_created_at|idx_status_created_at      |9      |                       | 250|   100.0|Using where; Using index; Using temporary; Using filesort|
+ 1|SIMPLE     |od1_0|          |ref   |FKrws2q0si6oyd6il8gqe2aennc  |FKrws2q0si6oyd6il8gqe2aennc|8      |market.o1_0.id         |   5|   100.0|                                                         |
+ 1|SIMPLE     |p1_0 |          |eq_ref|PRIMARY                      |PRIMARY                    |8      |market.od1_0.product_id|   1|   100.0|                                                         |
+```
+
+type을 먼저 확인해보면 ALL → range로 범위 검색이 가능해 진 것을 확인할 수 있으며 row 수 또한 ORDER_COMPLETE 상태에 맞는 row 수로 필터링 된 것을 볼 수 있습니다. 또한 key에서 위에서 만든 복합 인덱스를 잘 활용하는 것도 확인할 수 있었습니다.
+<br><br>
+
+### 인덱스 적용 성능 개선 분석 결론
+
+- 인덱스를 적용함으로써 데이터 조회 속도를 최적화하고, 불필요한 테이블 풀 스캔을 방지할 수 있었습니다.
+- 읽기 성능이 중요한 쿼리(특히 조회 빈도가 높은 상품 조회)에서는 적절한 인덱스 설계가 필수적임을 확인하였습니다.
+- 간단한 인덱스 적용만으로도 쿼리 성능을 크게 개선할 수 있다는 것을 학습할 수 있었습니다.
+<br><br>
+
+### 참고 자료
+
+- https://mangkyu.tistory.com/96
+- https://dev.mysql.com/doc/refman/8.0/en/column-indexes.html
+- [Real Mysql 8.0 1권](https://product.kyobobook.co.kr/detail/S000001766482)
+
+</details>
