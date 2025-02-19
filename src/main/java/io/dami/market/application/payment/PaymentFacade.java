@@ -27,6 +27,6 @@ public class PaymentFacade {
     productService.quantitySubtract(order.getProductQuantityMap());
     Payment payment = paymentService.pay(orderId, order.getTotalAmount());
     pointService.usePoints(userId, payment.getTotalAmount());
-    eventPublisher.publishEvent(new PaymentCompleteEvent(orderId, payment.getId()));
+    eventPublisher.publishEvent(new PayCompleteEvent(orderId, payment.getId()));
   }
 }

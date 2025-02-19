@@ -1,6 +1,6 @@
 package io.dami.market.application.payment;
 
-public record PaymentCompleteEvent(
+public record PayCompleteEvent(
     Long orderId,
     Long paymentId
 ) {
