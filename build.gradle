@@ -51,6 +51,12 @@ dependencies {
 
     // RETRY
     implementation 'org.springframework.retry:spring-retry'
+
+    // kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+
+    // Kafka test
+    testImplementation "org.testcontainers:kafka"
 }
 
 // querydsl generated 경로 설정
