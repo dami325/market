@@ -4,6 +4,7 @@ import io.dami.market.domain.order.Order;
 import io.dami.market.domain.order.OrderService;
 import io.dami.market.domain.payment.Payment;
 import io.dami.market.domain.payment.PaymentService;
+import io.dami.market.domain.payment.event.PayCompleteEvent;
 import io.dami.market.domain.point.PointService;
 import io.dami.market.domain.product.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,6 @@ public class PaymentFacade {
     productService.quantitySubtract(order.getProductQuantityMap());
     Payment payment = paymentService.pay(orderId, order.getTotalAmount());
     pointService.usePoints(userId, payment.getTotalAmount());
-    eventPublisher.publishEvent(new PaymentCompleteEvent(orderId, payment.getId()));
+    eventPublisher.publishEvent(new PayCompleteEvent(orderId, payment.getId()));
   }
 }

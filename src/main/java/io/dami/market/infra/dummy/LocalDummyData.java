@@ -15,8 +15,6 @@ import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -42,7 +40,7 @@ public class LocalDummyData {
   public void init() {
     if (initDummy) {
 
-      int userCount = 500;
+      int userCount = 1;
 
       couponRepository.save(Coupon.builder()
           .name("선착순쿠폰")
@@ -52,18 +50,12 @@ public class LocalDummyData {
           .totalQuantity(500)
           .build());
 
-      for (int i = 0; i < 100000; i++) {
+      for (int i = 0; i < 100; i++) {
         productRepository.save(Product.builder()
             .name("product " + i)
             .price(new BigDecimal("1000"))
             .stockQuantity(1000)
             .build());
-      }
-
-      List<Product> products = new ArrayList<>();
-      for (Long i = 1L; i <= 100000; i++) {
-        Product product = productRepository.getProduct(i);
-        products.add(product);
       }
 
       for (int i = 1; i <= userCount; i++) {
@@ -72,7 +64,7 @@ public class LocalDummyData {
             .build());
 
         pointRepository.save(Point.builder()
-            .totalPoint(new BigDecimal("100000"))
+            .totalPoint(new BigDecimal("1000000"))
             .userId(user.getId())
             .build());
 
@@ -89,23 +81,22 @@ public class LocalDummyData {
         Order order = orderRepository.save(Order.builder()
             .userId(user.getId())
             .issuedCouponId(null)
-            .status(
-                user.getId() % 2 == 0 ? OrderStatus.ORDER_COMPLETE : OrderStatus.ORDER_CANCELLED)
+            .status(OrderStatus.ORDER_COMPLETE)
             .build());
 
         int count = 0;
-        while (true) {
-          Long productIndex = (long) (Math.random() * 100000);
+
+        for (long j = 1L; j < 10L; j++) {
+          Long productIndex = j;
           if (count == 5) {
             break;
           }
           count++;
           order.addOrderDetail(
-              OrderDetail.createOrderDetail(order, productIndex, (int) (Math.random() * 1001),
+              OrderDetail.createOrderDetail(order, productIndex, 10,
                   new BigDecimal("3000")));
         }
       }
     }
   }
-
 }
