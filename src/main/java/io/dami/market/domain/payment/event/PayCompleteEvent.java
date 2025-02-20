@@ -1,4 +1,4 @@
-package io.dami.market.application.payment;
+package io.dami.market.domain.payment.event;
 
 public record PayCompleteEvent(
     Long orderId,

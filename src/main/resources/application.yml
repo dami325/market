@@ -25,7 +25,7 @@ spring:
     password: 1234
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -59,4 +59,4 @@ logging:
     root: info
     org.hibernate.orm.jdbc.bind: trace
 
-dummy-data: false
+dummy-data: true

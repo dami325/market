@@ -1,6 +1,6 @@
 package io.dami.market.infra.dataplatform;
 
-import io.dami.market.application.payment.PayCompleteEvent;
+import io.dami.market.domain.payment.event.PayCompleteEvent;
 import org.springframework.stereotype.Component;
 
 /**

@@ -4,6 +4,7 @@ import io.dami.market.domain.order.Order;
 import io.dami.market.domain.order.OrderService;
 import io.dami.market.domain.payment.Payment;
 import io.dami.market.domain.payment.PaymentService;
+import io.dami.market.domain.payment.event.PayCompleteEvent;
 import io.dami.market.domain.point.PointService;
 import io.dami.market.domain.product.ProductService;
 import lombok.RequiredArgsConstructor;
