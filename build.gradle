@@ -59,6 +59,10 @@ dependencies {
     testImplementation "org.testcontainers:kafka"
 
     implementation "com.vladmihalcea:hibernate-types-60:2.20.0"
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    implementation 'io.micrometer:micrometer-registry-prometheus'
 }
 
 // querydsl generated 경로 설정

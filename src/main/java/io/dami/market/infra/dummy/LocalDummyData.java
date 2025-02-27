@@ -2,9 +2,6 @@ package io.dami.market.infra.dummy;
 
 import io.dami.market.domain.coupon.Coupon;
 import io.dami.market.domain.coupon.CouponRepository;
-import io.dami.market.domain.order.Order;
-import io.dami.market.domain.order.Order.OrderStatus;
-import io.dami.market.domain.order.OrderDetail;
 import io.dami.market.domain.order.OrderRepository;
 import io.dami.market.domain.payment.PaymentRepository;
 import io.dami.market.domain.point.Point;
@@ -40,21 +37,21 @@ public class LocalDummyData {
   public void init() {
     if (initDummy) {
 
-      int userCount = 1;
+      int userCount = 100;
 
       couponRepository.save(Coupon.builder()
           .name("선착순쿠폰")
           .endDate(LocalDateTime.now().plusDays(5))
           .issuedQuantity(0)
           .discountAmount(new BigDecimal("1000"))
-          .totalQuantity(500)
+          .totalQuantity(500000)
           .build());
 
       for (int i = 0; i < 100; i++) {
         productRepository.save(Product.builder()
             .name("product " + i)
             .price(new BigDecimal("1000"))
-            .stockQuantity(1000)
+            .stockQuantity(100000)
             .build());
       }
 
@@ -68,34 +65,34 @@ public class LocalDummyData {
             .userId(user.getId())
             .build());
 
-        Coupon coupon = couponRepository.save(Coupon.builder()
-            .name("coupon" + i)
-            .endDate(LocalDateTime.now().plusDays(5))
-            .issuedQuantity(0)
-            .discountAmount(new BigDecimal("1000"))
-            .totalQuantity(100)
-            .build());
+//        Coupon coupon = couponRepository.save(Coupon.builder()
+//            .name("coupon" + i)
+//            .endDate(LocalDateTime.now().plusDays(5))
+//            .issuedQuantity(0)
+//            .discountAmount(new BigDecimal("1000"))
+//            .totalQuantity(100)
+//            .build());
+//
+//        coupon.issuedCoupon(user.getId());
 
-        coupon.issuedCoupon(user.getId());
+//        Order order = orderRepository.save(Order.builder()
+//            .userId(user.getId())
+//            .issuedCouponId(null)
+//            .status(OrderStatus.ORDER_COMPLETE)
+//            .build());
 
-        Order order = orderRepository.save(Order.builder()
-            .userId(user.getId())
-            .issuedCouponId(null)
-            .status(OrderStatus.ORDER_COMPLETE)
-            .build());
-
-        int count = 0;
-
-        for (long j = 1L; j < 10L; j++) {
-          Long productIndex = j;
-          if (count == 5) {
-            break;
-          }
-          count++;
-          order.addOrderDetail(
-              OrderDetail.createOrderDetail(order, productIndex, 10,
-                  new BigDecimal("3000")));
-        }
+//        int count = 0;
+//
+//        for (long j = 1L; j < 10L; j++) {
+//          Long productIndex = j;
+//          if (count == 5) {
+//            break;
+//          }
+//          count++;
+//          order.addOrderDetail(
+//              OrderDetail.createOrderDetail(order, productIndex, 10,
+//                  new BigDecimal("3000")));
+//        }
       }
     }
   }
