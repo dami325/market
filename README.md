@@ -1774,3 +1774,176 @@ Choreography-based Saga 패턴에서는 각 서비스가 자체적으로 Local �
 - [https://github.com/rueun/hhplus-concert-reservation/blob/main/docs/MSA_TRANSACTION.md#서비스-분리-및-주요-담당-업무](https://github.com/rueun/hhplus-concert-reservation/blob/main/docs/MSA_TRANSACTION.md#%EC%84%9C%EB%B9%84%EC%8A%A4-%EB%B6%84%EB%A6%AC-%EB%B0%8F-%EC%A3%BC%EC%9A%94-%EB%8B%B4%EB%8B%B9-%EC%97%85%EB%AC%B4)
 
 </details>
+
+<details>
+
+<summary>핵심 이커머스 API 부하 테스트 및 성능 분석</summary>
+
+# 핵심 이커머스 API 부하 테스트 및 성능 분석
+
+### 목차
+
+- [개요](#개요)
+- [테스트 환경 구성](#테스트-환경-구성)
+- [테스트 API](#테스트-api)
+- [테스트 스크립트 작성](#테스트-스크립트-작성)
+- [테스트 스크립트 설명](#테스트-스크립트-설명)
+- [결과 및 해석](#결과-및-해석)
+- [부하 테스트 결론](#부하-테스트-결론)
+
+
+### 개요
+
+최근 개발 중인 이커머스 프로젝트가 거의 마무리되어 가며, 여러 가지 의문이 생겼습니다.
+
+“내가 만든 프로젝트는 과연 몇 명의 사용자가 안정적으로 사용할 수 있을까?”
+“서버 사양을 어느 정도로 구성해야 100개의 동시 트래픽을 견딜 수 있는 서비스를 제공할 수 있으며, 100개의 동시 트래픽을 견디는 서버 사양은 몇개의 동시 트래픽 시점부터 병목 현상이 심하게 발생할까?”
+
+“선착순 쿠폰 발급 서비스에 사용된 레디스, 데이터 플랫폼 전송 로직에 사용된 카프카 등은 부하가 생겼을때 어떻게 동작할까?”
+
+위와 같은 많은 의문중 이커머스의 핵심 비즈니스 API에 100개의 동시 트래픽이 왔을 경우 어느정도 부하가 걸리는지 파악하기 위해 부하 테스트와 서버 모니터링을 진행하여, 특정 트래픽 수준에서 요구되는 서버 사양과 한계를 정확히 파악하고자 이 글을 작성하게 되었습니다.
+
+### 테스트 환경 구성
+
+서버와 부하 테스트는 모두 로컬 환경의 하나의 컴퓨터 실행합니다. 로컬 환경이 실제 운영 환경과 동일한 결과얻지 못하겠지만, 이를 통해 로컬 환경에서 부하 테스트를 진행할 때 나타나는 한계점도 얻을 수 있을 것이라 생각합니다.
+
+부하 테스트 도구로는 k6를 사용합니다. 부하 테스트 도구로 k6를 선택한 이유는 자바스크립트 문법을 기반으로 하여 서버 API 호출을 간단한 스크립트 작성만으로 수행할 수 있으며, 설치 및 설정이 nGrinder 등 다른 도구에 비해 비교적 간단하기 때문입니다.
+
+모니터링은 프로메테우스와 그라파나 조합을 사용합니다. 이 조합은 여러 멘토링과 강의에서 편리하고 좋다는 말을 많이 들었으며, 실제로 현재 여러 기업에서 사용중인 검증된 모니터링 도구입니다. 또한, 설치 및 설정하는 것이 간단하고, 시각화에 필요한 대시보드 템플릿, 메신저 알림 연동등 편리한 기능을 많이 제공한다는 점에서 선택하게 되었습니다.
+
+### 테스트 API
+
+1. 선착순 쿠폰 발급
+2. 주문서 생성
+3. 결제
+
+총 3개의 API를 활용하여 테스트를 진행합니다. 
+
+결제 이후 주문/결제 정보를 외부 데이터 플랫폼으로 전송하는 기능은 mock으로 대체합니다.
+
+### 테스트 스크립트 작성
+
+<details>
+
+ 
+<summary>스크립트</summary>
+
+```javascript
+    import http from "k6/http";
+    import {sleep} from "k6";
+    
+    export let options = {
+      vus: 100,         // 100명의 가상 사용자
+      iterations: 100,  // 각 VU가 한 번씩 실행
+    };
+    
+    const BASE_URL = 'http://localhost:8080/api/v1';
+    const COUPON_ID = 1;
+    
+    export default function () {
+      const userId = __VU; // 각 VU마다 고유한 userId 할당
+    
+      // 1. 쿠폰 발급 요청
+      let couponUrl = `${BASE_URL}/coupons/${COUPON_ID}?userId=${userId}`;
+      let couponRes = http.post(couponUrl, null, {
+        headers: {"Content-Type": "application/json"},
+      });
+    
+      sleep(10);
+    
+      if (couponRes.status === 400) {
+        let errorResponse = couponRes.json();
+        console.warn(
+            `User ${userId} failed to get a coupon: ${errorResponse.message}`);
+        return; // 쿠폰 발급 실패 시 이후 요청 중단
+      }
+    
+      // 2. 주문 생성 요청 (발급받은 쿠폰 사용)
+      let orderUrl = `${BASE_URL}/orders`;
+      let orderRequest = {
+        userId: userId,
+        products: [
+          {productId: 1, quantity: 2},
+          {productId: 2, quantity: 1},
+          {productId: 3, quantity: 5},
+        ],
+      };
+    
+      let orderRes = http.post(orderUrl, JSON.stringify(orderRequest), {
+        headers: {"Content-Type": "application/json"},
+      });
+    
+      if (orderRes.status === 400) {
+        let errorResponse = orderRes.json();
+        console.warn(
+            `User ${userId} failed to create an order: ${errorResponse.message}`);
+        return; // 주문 생성 실패 시 이후 요청 중단
+      }
+    
+      // 주문 응답에서 orderId 추출 (응답 형식에 따라 수정 필요)
+      let orderData = orderRes.json();
+      let orderId = orderData.orderId;  // orderId가 없으면 임시로 userId 사용
+    
+      // 3. 결제 요청
+      let paymentUrl = `${BASE_URL}/payment`;
+      let payRequest = {
+        userId: userId,
+        orderId: orderId,
+      };
+    
+      let payRes = http.post(paymentUrl, JSON.stringify(payRequest), {
+        headers: {"Content-Type": "application/json"},
+      });
+    
+      // 결제 결과 로깅 (필요 시 응답 체크)
+      if (payRes.status === 400) {
+        let errorResponse = payRes.json();
+        console.warn(
+            `User ${userId} failed to process payment: ${errorResponse.message}`);
+      }
+    
+      sleep(1);
+    }
+    
+```
+    
+ 
+</details>
+
+    
+
+    
+
+### 테스트 스크립트 설명
+
+사용자가 선착순 쿠폰을 발급한 이후 주문과 결제를 단계적으로 진행하는 상황을 가정하여 테스트 스크립트를 작성하였습니다.
+
+선착순 쿠폰 발급 후 sleep(10); 을 걸어준 것은 선착순 쿠폰 발급은 레디스 sorted set 자료 구조를 활용한 스케줄링 방식으로 처리되고 있기 때문에 스케줄이 정상적으로 도는 시간을 기다리기 위해서 입니다.
+
+ 또한 100명의 가상 사용자가 단 한 번씩 요청을 보내는 부하 테스트는 스트레스 테스트와는 엄연히 다른 테스트 방법입니다. 
+
+부하 테스트의 목적은 주로 시스템 성능을 확인하는 것에 중점을 두고, 스트레스 테스트는 극한의 조건으로 시스템의 동작 중지가 됐을 경우 장애 복구 및 허점을 찾아내기 위한 것에 중점을 뒀다는 차이점이 있습니다. 즉 부하 테스트는 특정 부하가 모두 끝나면 테스트가 끝난 것이지만 스트레스 테스트는 애플리케이션이 비정상 종료가 되어야 테스트가 종료되는 것입니다.
+
+### 결과 및 해석
+
+아래의 그래프들은 요청이 몰린 특정 시간의 대시보드 입니다.
+
+**K6 대시보드**
+
+![image (3)](https://github.com/user-attachments/assets/f1c5d061-3f86-4363-b99b-ec94c37b75ea)
+
+
+100명의 동시 요청에 3개의 API가 처리되는 상위 90%의 시간은 6.60초로 확인할 수 있습니다.
+
+**애플리케이션 대시보드**
+
+![image (4)](https://github.com/user-attachments/assets/39c62a01-02fd-4482-a126-90693425bbb3)
+
+
+각 지표를 간단히 분석해 보면 트래픽이 몰린 시점에 CPU 사용량이 순간적으로 80%까지 올라가는 것을 확인할 수 있었는데, 로컬에서 K6를 같은 환경에서 돌리는 것 등을 감안해도 전반적으로 큰 병목 지점과 에러 없이 잘 처리하는 것을 확인할 수 있었습니다.
+
+### 부하 테스트 결론
+
+요구사항의 100명의 핵심 비즈니스 API의 동시 요청에 대해 부하 테스트를 진행했습니다. 쿠폰발급 → 주문 → 결제 프로세스는 평균 2.40s로 성능 개선을 위한 별도 작업은 진행하지 않습니다. 트래픽이 몰린 시점 애플리케이션 cpu의 사용량이 순간적으로 80% 까지 올랐으나 로컬 환경에서 k6 스크립트와 함께 진행한 점을 감안하여 100명의 동시 트래픽에 대해선 안전성이 높다고 판단하였습니다.
+	
+</details>
