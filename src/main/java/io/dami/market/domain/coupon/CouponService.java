@@ -27,6 +27,7 @@ public class CouponService {
     return couponRepository.getFirstServedCoupons(userId);
   }
 
+
   @DistributedLock(key = "'COUPON_' + #couponId")
   @Transactional
   public void issueACoupon(Long couponId, Long userId) {

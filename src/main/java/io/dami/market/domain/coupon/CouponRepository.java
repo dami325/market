@@ -17,4 +17,5 @@ public interface CouponRepository {
 
   List<Coupon> findAllAvailableCoupons();
 
+  Coupon getCouponWithLock(Long couponId);
 }
