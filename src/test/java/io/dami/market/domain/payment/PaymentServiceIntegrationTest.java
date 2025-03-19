@@ -4,7 +4,7 @@ import io.dami.market.domain.coupon.CouponRepository;
 import io.dami.market.domain.order.OrderRepository;
 import io.dami.market.domain.product.ProductRepository;
 import io.dami.market.domain.user.UserRepository;
-import io.dami.market.infra.coupon.IssuedCouponJpaRepository;
+import io.dami.market.infrastructure.coupon.IssuedCouponJpaRepository;
 import io.dami.market.utils.IntegrationServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 

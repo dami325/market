@@ -6,7 +6,7 @@ import io.dami.market.domain.payment.event.PayCompleteEvent;
 import io.dami.market.domain.payment.outbox.PaymentOutbox;
 import io.dami.market.domain.payment.outbox.PaymentOutbox.PaymentOutboxStatus;
 import io.dami.market.domain.payment.outbox.PaymentOutboxService;
-import io.dami.market.infra.dataplatform.DataPlatformService;
+import io.dami.market.infrastructure.dataplatform.DataPlatformService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;

@@ -68,7 +68,7 @@ logging:
     root: info
     org.hibernate.orm.jdbc.bind: trace
 
-dummy-data: true
+dummy-data: false
 
 #actuator
 management:

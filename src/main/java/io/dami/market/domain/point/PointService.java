@@ -1,6 +1,6 @@
 package io.dami.market.domain.point;
 
-import io.dami.market.infra.redis.redisson.DistributedLock;
+import io.dami.market.infrastructure.redis.redisson.DistributedLock;
 import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

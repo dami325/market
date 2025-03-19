@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
@@ -42,27 +43,30 @@ public class LogFilter extends OncePerRequestFilter {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   @Override
+  protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    List<String> excludeUrls = List.of("/actuator", "/swagger");
+    String requestURI = request.getRequestURI();
+    return excludeUrls.stream().anyMatch(requestURI::startsWith);
+  }
+
+  @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
     ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(request);
     ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(response);
     boolean exceptionOccurred = false;
-    if ("http://192.168.0.19:8080/actuator/prometheus".equals(requestWrapper.getRequestURL())) {
+    try {
       filterChain.doFilter(requestWrapper, responseWrapper);
-    } else {
-      try {
-        filterChain.doFilter(requestWrapper, responseWrapper);
-      } catch (Exception e) {
-        exceptionOccurred = true;
+    } catch (Exception e) {
+      exceptionOccurred = true;
+      logRequest(requestWrapper);
+      throw e;
+    } finally {
+      if (!exceptionOccurred) { // 에러났을때 요청 로그 두번 남는거 방지용
         logRequest(requestWrapper);
-        throw e;
-      } finally {
-        if (!exceptionOccurred) { // 에러났을때 요청 로그 두번 남는거 방지용
-          logRequest(requestWrapper);
-        }
-        logResponse(responseWrapper);
-        responseWrapper.copyBodyToResponse();
       }
+      logResponse(responseWrapper);
+      responseWrapper.copyBodyToResponse();
     }
   }
 

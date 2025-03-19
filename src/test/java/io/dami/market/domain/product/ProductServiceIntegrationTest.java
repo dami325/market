@@ -7,7 +7,7 @@ import io.dami.market.domain.order.OrderRepository;
 import io.dami.market.domain.point.PointRepository;
 import io.dami.market.domain.user.User;
 import io.dami.market.domain.user.UserRepository;
-import io.dami.market.infra.product.ProductJpaRepository;
+import io.dami.market.infrastructure.product.ProductJpaRepository;
 import io.dami.market.interfaces.product.ProductResponse;
 import io.dami.market.utils.IntegrationServiceTest;
 import io.dami.market.utils.fixture.OrderFixture;
