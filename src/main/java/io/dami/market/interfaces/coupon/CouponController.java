@@ -51,7 +51,7 @@ public class CouponController {
   })
   @PostMapping("/{couponId}")
   public ResponseEntity<Void> issueACoupon(@PathVariable Long couponId, @RequestParam Long userId) {
-    couponService.issueACouponRedis(couponId, userId);
+    couponService.issueACouponV2(couponId, userId);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 

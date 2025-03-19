@@ -55,7 +55,7 @@ class CouponServiceUnitTest {
     when(couponRepository.getCoupon(couponId)).thenReturn(coupon);
 
     // when & then
-    Assertions.assertThatThrownBy(() -> couponService.issueACoupon(couponId, userId))
+    Assertions.assertThatThrownBy(() -> couponService.issueACouponV1(couponId, userId))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("발급 수량 소진");
   }
@@ -72,7 +72,7 @@ class CouponServiceUnitTest {
     when(couponRepository.getCoupon(couponId)).thenReturn(coupon);
 
     // when & then
-    Assertions.assertThatThrownBy(() -> couponService.issueACoupon(couponId, userId))
+    Assertions.assertThatThrownBy(() -> couponService.issueACouponV1(couponId, userId))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("만료된 쿠폰");
   }
@@ -88,10 +88,10 @@ class CouponServiceUnitTest {
     when(couponRepository.getCoupon(couponId)).thenReturn(coupon);
 
     // when & then
-    couponService.issueACoupon(couponId, userId); // 한번 발급
+    couponService.issueACouponV1(couponId, userId); // 한번 발급
 
     // 중복발급
-    Assertions.assertThatThrownBy(() -> couponService.issueACoupon(couponId, userId))
+    Assertions.assertThatThrownBy(() -> couponService.issueACouponV1(couponId, userId))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("같은 쿠폰은 하나만 발급 가능합니다.");
   }
@@ -108,7 +108,7 @@ class CouponServiceUnitTest {
     when(couponRepository.getCoupon(couponId)).thenReturn(coupon);
 
     // when
-    couponService.issueACoupon(couponId, userId); // 한번 발급
+    couponService.issueACouponV1(couponId, userId); // 한번 발급
 
     // then
     Set<IssuedCoupon> issuedCoupons = coupon.getIssuedCoupons();

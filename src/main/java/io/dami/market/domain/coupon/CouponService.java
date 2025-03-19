@@ -29,7 +29,7 @@ public class CouponService {
 
   @DistributedLock(key = "'COUPON_' + #couponId")
   @Transactional
-  public void issueACoupon(Long couponId, Long userId) {
+  public void issueACouponV1(Long couponId, Long userId) {
     Coupon coupon = couponRepository.getCouponWithLock(couponId);
     coupon.issuedCoupon(userId);
   }
@@ -41,7 +41,7 @@ public class CouponService {
         .orElse(BigDecimal.ZERO);
   }
 
-  public void issueACouponRedis(Long couponId, Long userId) {
+  public void issueACouponV2(Long couponId, Long userId) {
     String issuedKey = String.format(COUPON_ISSUED_KEY, couponId);
     if (Boolean.TRUE.equals(
         redisTemplate.opsForSet().isMember(issuedKey, String.valueOf(userId)))) {

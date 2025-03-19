@@ -76,7 +76,7 @@ class CouponServiceIntegrationServiceTest extends IntegrationServiceTest {
     Coupon coupon = couponRepository.save(CouponFixture.coupon("새해쿠폰"));
 
     // when
-    couponService.issueACoupon(coupon.getId(), user.getId());
+    couponService.issueACouponV1(coupon.getId(), user.getId());
 
     // then
     List<Coupon> result = couponRepository.getCouponsByUserId(user.getId());
@@ -96,7 +96,7 @@ class CouponServiceIntegrationServiceTest extends IntegrationServiceTest {
     for (int i = 0; i < threads; i++) {
       executorService.submit(() -> {
         try {
-          couponService.issueACoupon(coupon.getId(), user.getId());
+          couponService.issueACouponV1(coupon.getId(), user.getId());
         } catch (IllegalArgumentException e) {
           Assertions.assertThat(e.getMessage()).isEqualTo("같은 쿠폰은 하나만 발급 가능합니다.");
         } finally {
@@ -134,7 +134,7 @@ class CouponServiceIntegrationServiceTest extends IntegrationServiceTest {
     for (User user : users) {
       executorService.submit(() -> {
         try {
-          couponService.issueACoupon(coupon.getId(), user.getId());
+          couponService.issueACouponV1(coupon.getId(), user.getId());
         } catch (IllegalArgumentException e) {
           Assertions.assertThat(e.getMessage()).isEqualTo("같은 쿠폰은 하나만 발급 가능합니다.");
         } finally {
@@ -157,7 +157,7 @@ class CouponServiceIntegrationServiceTest extends IntegrationServiceTest {
     Coupon coupon = couponRepository.save(CouponFixture.coupon("새해쿠폰"));
 
     // when
-    couponService.issueACouponRedis(coupon.getId(), user.getId());
+    couponService.issueACouponV2(coupon.getId(), user.getId());
 
     // then
     String requestKey = String.format(COUPON_REQUEST_KEY, coupon.getId());
@@ -173,7 +173,7 @@ class CouponServiceIntegrationServiceTest extends IntegrationServiceTest {
     // given
     User user = userRepository.save(UserFixture.user("박주닮"));
     Coupon coupon = couponRepository.save(CouponFixture.coupon("새해쿠폰"));
-    couponService.issueACouponRedis(coupon.getId(), user.getId());
+    couponService.issueACouponV2(coupon.getId(), user.getId());
     int beforeIssuedQuantity = coupon.getIssuedQuantity();
 
     // when
@@ -184,6 +184,6 @@ class CouponServiceIntegrationServiceTest extends IntegrationServiceTest {
     int issuedQuantity = couponRepository.getCoupon(coupon.getId())
         .getIssuedQuantity();
     Assertions.assertThat(issuedQuantity).isEqualTo(beforeIssuedQuantity + 1);
-    
+
   }
 }
