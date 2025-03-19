@@ -18,8 +18,6 @@ public class KafkaProducerService {
 
   /**
    * 기본적인 메시지 전송
-   *
-   * @param message 전송 메시지
    */
   public void sendMessage(String message) {
     kafkaTemplate.send(TOPIC_NAME, message);
@@ -27,9 +25,6 @@ public class KafkaProducerService {
 
   /**
    * 키와 함께 메시지 전송
-   *
-   * @param key     Topic Key
-   * @param message 전송 메시지
    */
   public void sendMessageWithKey(String key, String message) {
     kafkaTemplate.send(TOPIC_NAME, key, message);
@@ -37,9 +32,6 @@ public class KafkaProducerService {
 
   /**
    * 특정 파티션으로 메시지 전송
-   *
-   * @param message   전송 메시지
-   * @param partition 파티션 명
    */
   public void sendMessageToPartition(String message, int partition) {
     kafkaTemplate.send(TOPIC_NAME, partition, null, message);
@@ -47,8 +39,6 @@ public class KafkaProducerService {
 
   /**
    * 비동기 전송 결과 처리
-   *
-   * @param message 전송 메시지
    */
   public void sendMessageWithCallback(String message) {
     kafkaTemplate.send(TOPIC_NAME, message)

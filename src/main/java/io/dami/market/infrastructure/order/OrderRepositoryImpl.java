@@ -9,17 +9,17 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class OrderRepositoryImpl implements OrderRepository {
 
-    private final OrderJpaRepository orderJpaRepository;
+  private final OrderJpaRepository orderJpaRepository;
 
-    @Override
-    public Order save(Order order) {
-        return orderJpaRepository.save(order);
-    }
+  @Override
+  public Order save(Order order) {
+    return orderJpaRepository.save(order);
+  }
 
-    @Override
-    public Order getCompleteOrder(Long orderId) {
-        return orderJpaRepository.getCompleteOrder(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문번호"));
-    }
+  @Override
+  public Order getCompleteOrder(Long orderId) {
+    return orderJpaRepository.getCompleteOrder(orderId)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문번호"));
+  }
 
 }

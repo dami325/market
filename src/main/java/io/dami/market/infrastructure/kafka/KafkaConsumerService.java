@@ -14,8 +14,6 @@ public class KafkaConsumerService {
 
   /**
    * 기본적인 토픽 리스닝
-   *
-   * @param message 수신 메시지
    */
   @KafkaListener(topics = "example-topic", groupId = "group-1")
   public void listen(String message) {
@@ -24,8 +22,6 @@ public class KafkaConsumerService {
 
   /**
    * 동시성과 자동시작 설정
-   *
-   * @param message 수신 메시지
    */
   @KafkaListener(
       topics = "high-volume-topic",
@@ -39,8 +35,6 @@ public class KafkaConsumerService {
 
   /**
    * 배치 처리와 에러 핸들러 설정
-   *
-   * @param messages 수신 메시지
    */
   @KafkaListener(
       topics = "batch-topic",
@@ -54,8 +48,6 @@ public class KafkaConsumerService {
 
   /**
    * 토픽 패턴 사용
-   *
-   * @param message 수신 메시지
    */
   @KafkaListener(
       topicPattern = "test.*",

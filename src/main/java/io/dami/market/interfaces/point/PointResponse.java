@@ -7,12 +7,13 @@ import java.math.BigDecimal;
 
 public record PointResponse() {
 
-    public record PointDetails(
-            @Schema(example = "10000")
-            BigDecimal balance
-    ) {
-        public PointDetails(Point point){
-            this(point.getTotalPoint());
-        }
+  public record PointDetails(
+      @Schema(example = "10000")
+      BigDecimal balance
+  ) {
+
+    public PointDetails(Point point) {
+      this(point.getTotalPoint());
     }
+  }
 }

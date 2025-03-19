@@ -1,5 +1,6 @@
 package io.dami.market.domain.coupon;
 
+import io.dami.market.infrastructure.redis.redisson.DistributedLock;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
@@ -26,8 +27,7 @@ public class CouponService {
     return couponRepository.getFirstServedCoupons(userId);
   }
 
-
-  //  @DistributedLock(key = "'COUPON_' + #couponId")
+  @DistributedLock(key = "'COUPON_' + #couponId")
   @Transactional
   public void issueACoupon(Long couponId, Long userId) {
     Coupon coupon = couponRepository.getCouponWithLock(couponId);
@@ -48,8 +48,7 @@ public class CouponService {
       throw new CouponAlreadyIssuedException();
     }
     String requestKey = String.format(COUPON_REQUEST_KEY, couponId);
-    Long timestamp = System.currentTimeMillis();
-    redisTemplate.opsForZSet().add(requestKey, userId.toString(), timestamp);
+    redisTemplate.opsForZSet().add(requestKey, userId.toString(), System.currentTimeMillis());
   }
 
   @Transactional
@@ -74,12 +73,9 @@ public class CouponService {
     Set<String> failedUsers = redisTemplate.opsForZSet().range(requestKey, 0, -1);
 
     for (String failedUser : failedUsers) {
-      sendFailureMessage(Long.valueOf(failedUser));
+      log.info("쿠폰 발급 실패: userId = {}", Long.valueOf(failedUser));
     }
     redisTemplate.delete(requestKey);
   }
 
-  private void sendFailureMessage(Long userId) {
-    log.info("쿠폰 발급 실패: userId = {}", userId);
-  }
 }

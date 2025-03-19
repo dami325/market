@@ -6,25 +6,24 @@ import io.dami.market.domain.order.OrderCommand;
 import io.dami.market.domain.order.OrderService;
 import io.dami.market.domain.product.Product;
 import io.dami.market.domain.product.ProductService;
+import java.math.BigDecimal;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
 public class OrderFacade {
 
-    private final OrderService orderService;
-    private final CouponService couponService;
-    private final ProductService productService;
+  private final OrderService orderService;
+  private final CouponService couponService;
+  private final ProductService productService;
 
-    @Transactional
-    public Order createOrder(OrderCommand.CreateOrder commend) {
-        Map<Long, Product> productMap = productService.getProductMap(commend.productIds());
-        BigDecimal discountAmount = couponService.useCoupon(commend.issuedCouponId());
-        return orderService.createOrder(commend, discountAmount, productMap);
-    }
+  @Transactional
+  public Order createOrder(OrderCommand.CreateOrder commend) {
+    Map<Long, Product> productMap = productService.getProductMap(commend.productIds());
+    BigDecimal discountAmount = couponService.useCoupon(commend.issuedCouponId());
+    return orderService.createOrder(commend, discountAmount, productMap);
+  }
 }

@@ -10,10 +10,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LocalDataInitializer {
 
-    private final LocalDummyData localDummyData;
+  private final LocalDummyData localDummyData;
 
-    @PostConstruct
-    public void init() {
-        localDummyData.init();
-    }
+  @PostConstruct
+  public void init() {
+    localDummyData.init();
+  }
 }

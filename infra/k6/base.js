@@ -1,6 +1,8 @@
-import http from "k6/http" // http test
+import http from "data/k6/http" // http test
 import {sleep} from "k6" // sleep 기능 사용 시 추가 (sleep(n) -> 지정한 n 기간 동한 VU 실행을 일시 중지)
-import {htmlReport} from "https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js"
+import {
+  htmlReport
+} from "https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js"
 import {textSummary} from "https://jslib.k6.io/k6-summary/0.0.1/index.js"; // K6 기본 포맷 불러오기
 
 export let options = {

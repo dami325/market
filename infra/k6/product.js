@@ -1,4 +1,4 @@
-import http from "k6/http";
+import http from "data/k6/http";
 
 export let options = {
   vus: 100,

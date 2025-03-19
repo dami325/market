@@ -14,65 +14,68 @@ ch.qos.logback.classic.db.DBAppender : DB(데이터베이스)에 로그를 찍�
 -->
 <configuration>
 
-    <springProperty name="LOG_LEVEL" source="logging.level.root" />
-    <springProperty name="LOG_PATH" source="logging.log-file-path" />
-    <springProperty name="LOG_FILE_NAME" source="logging.log-file-name" />
-    <property name="LOG_PATTERN" value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%logger{0}:%line] - %msg%n" />
+  <springProperty name="LOG_LEVEL" source="logging.level.root"/>
+  <springProperty name="LOG_PATH" source="logging.log-file-path"/>
+  <springProperty name="LOG_FILE_NAME" source="logging.log-file-name"/>
+  <property name="LOG_PATTERN"
+    value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%logger{0}:%line] - %msg%n"/>
 
-    <timestamp key="ToDay" datePattern="yyyy-MM-dd" />
+  <timestamp key="ToDay" datePattern="yyyy-MM-dd"/>
 
-    <!-- ch.qos.logback.core.ConsoleAppender : 콘솔에 로그를 찍음, 로그를 OutputStream에 작성하여 콘솔에 출력되도록 한다. -->
-    <!--encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"  명시하지 않아도 기본적으로 PatternLayoutEncoder가 사용-->
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>${LOG_PATTERN}</pattern>
-        </encoder>
-    </appender>
+  <!-- ch.qos.logback.core.ConsoleAppender : 콘솔에 로그를 찍음, 로그를 OutputStream에 작성하여 콘솔에 출력되도록 한다. -->
+  <!--encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"  명시하지 않아도 기본적으로 PatternLayoutEncoder가 사용-->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>${LOG_PATTERN}</pattern>
+    </encoder>
+  </appender>
 
 
-    <!-- ch.qos.logback.core.rolling.RollingFileAppender : 여러개의 파일을 롤링, 순회하면서 로그를 찍는다.(FileAppender를 상속 받는다. 지정 용량이 넘어간 Log File을 넘버링 하여 나누어 저장할 수 있다.) -->
-    <appender name="FILE1" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>INFO</level> <!-- INFO 이상의 로그만 INFO, WARN, ERROR 기록 -->
-        </filter>
-        <file>${LOG_PATH}/info/${ToDay}_${LOG_FILE_NAME}.log</file> <!-- 로그 파일에 대한 이름 및 경로 지정 -->
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy"> <!-- 새로운 로그 파일이 언제 생기게 할지 설정-->
-            <fileNamePattern> <!-- 롤링된 로그 파일의 이름 및 경로 지정 -->
-                ${LOG_PATH}/info/%d{yyyy-MM-dd}_${LOG_FILE_NAME}_%i.log
-            </fileNamePattern>
-            <maxFileSize>1GB</maxFileSize>
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>${LOG_PATTERN}</pattern>
-        </encoder>
-    </appender>
+  <!-- ch.qos.logback.core.rolling.RollingFileAppender : 여러개의 파일을 롤링, 순회하면서 로그를 찍는다.(FileAppender를 상속 받는다. 지정 용량이 넘어간 Log File을 넘버링 하여 나누어 저장할 수 있다.) -->
+  <appender name="FILE1" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>INFO</level> <!-- INFO 이상의 로그만 INFO, WARN, ERROR 기록 -->
+    </filter>
+    <file>${LOG_PATH}/info/${ToDay}_${LOG_FILE_NAME}.log</file> <!-- 로그 파일에 대한 이름 및 경로 지정 -->
+    <rollingPolicy
+      class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy"> <!-- 새로운 로그 파일이 언제 생기게 할지 설정-->
+      <fileNamePattern> <!-- 롤링된 로그 파일의 이름 및 경로 지정 -->
+        ${LOG_PATH}/info/%d{yyyy-MM-dd}_${LOG_FILE_NAME}_%i.log
+      </fileNamePattern>
+      <maxFileSize>1GB</maxFileSize>
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+    <encoder>
+      <pattern>${LOG_PATTERN}</pattern>
+    </encoder>
+  </appender>
 
-    <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>error</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
-        </filter>
-        <file>${LOG_PATH}/error/${ToDay}_${LOG_FILE_NAME}.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy"> <!-- 새로운 로그 파일이 언제 생기게 할지 설정-->
-            <fileNamePattern> <!-- 롤링된 로그 파일의 이름 및 경로 지정 -->
-                ${LOG_PATH}/error/%d{yyyy-MM-dd}_${LOG_FILE_NAME}_%i.log
-            </fileNamePattern>
-            <maxFileSize>1GB</maxFileSize>
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>${LOG_PATTERN}</pattern>
-        </encoder>
-    </appender>
+  <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <filter class="ch.qos.logback.classic.filter.LevelFilter">
+      <level>error</level>
+      <onMatch>ACCEPT</onMatch>
+      <onMismatch>DENY</onMismatch>
+    </filter>
+    <file>${LOG_PATH}/error/${ToDay}_${LOG_FILE_NAME}.log</file>
+    <rollingPolicy
+      class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy"> <!-- 새로운 로그 파일이 언제 생기게 할지 설정-->
+      <fileNamePattern> <!-- 롤링된 로그 파일의 이름 및 경로 지정 -->
+        ${LOG_PATH}/error/%d{yyyy-MM-dd}_${LOG_FILE_NAME}_%i.log
+      </fileNamePattern>
+      <maxFileSize>1GB</maxFileSize>
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+    <encoder>
+      <pattern>${LOG_PATTERN}</pattern>
+    </encoder>
+  </appender>
 
-    <!-- ConsoleAppender에서 로그 형식을 지정해준 뒤 콘솔에 찍고 싶은 logger에 appender를 추가 -->
-    <!--	<logger name="org.apache.http" level="INFO" />-->
-    <root level="${LOG_LEVEL}">
-        <appender-ref ref="FILE1" />
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="ERROR" />
-    </root>
+  <!-- ConsoleAppender에서 로그 형식을 지정해준 뒤 콘솔에 찍고 싶은 logger에 appender를 추가 -->
+  <!--	<logger name="org.apache.http" level="INFO" />-->
+  <root level="${LOG_LEVEL}">
+    <appender-ref ref="FILE1"/>
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="ERROR"/>
+  </root>
 
 </configuration>

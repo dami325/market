@@ -22,9 +22,6 @@ public class KafkaProducerController {
 
   /**
    * 지정 토픽으로 메시지를 전송합니다.
-   *
-   * @param message 메시지
-   * @return
    */
   @PostMapping("/messages")
   public ResponseEntity<String> sendMessage(@RequestBody String message) {
@@ -34,10 +31,6 @@ public class KafkaProducerController {
 
   /**
    * 지정 토픽으로 키와 함께 메시지를 전송합니다
-   *
-   * @param key     메시지 키
-   * @param message 메시지
-   * @return
    */
   @PostMapping("/messages/withKey")
   public ResponseEntity<String> sendMessageWithKey(@RequestParam String key,

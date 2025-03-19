@@ -10,16 +10,16 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserRepositoryImpl implements UserRepository {
 
-    private final UserJpaRepository userJpaRepository;
+  private final UserJpaRepository userJpaRepository;
 
-    @Override
-    public User getUser(Long userId) {
-        return userJpaRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 사용자."));
-    }
+  @Override
+  public User getUser(Long userId) {
+    return userJpaRepository.findById(userId)
+        .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 사용자."));
+  }
 
-    @Override
-    public User save(User user) {
-        return userJpaRepository.save(user);
-    }
+  @Override
+  public User save(User user) {
+    return userJpaRepository.save(user);
+  }
 }

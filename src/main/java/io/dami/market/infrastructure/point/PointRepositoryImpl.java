@@ -10,23 +10,23 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PointRepositoryImpl implements PointRepository {
 
-    private final PointJpaRepository pointJpaRepository;
+  private final PointJpaRepository pointJpaRepository;
 
-    @Override
-    public Point getPointByUserId(Long userId) {
-        return pointJpaRepository.findByUserId(userId)
-                .orElseThrow(EntityNotFoundException::new);
-    }
+  @Override
+  public Point getPointByUserId(Long userId) {
+    return pointJpaRepository.findByUserId(userId)
+        .orElseThrow(EntityNotFoundException::new);
+  }
 
-    @Override
-    public Point getPointByUserIdWithLock(Long userId) {
-        return pointJpaRepository.findByUserIdWithLock(userId)
-                .orElseThrow(EntityNotFoundException::new);
-    }
+  @Override
+  public Point getPointByUserIdWithLock(Long userId) {
+    return pointJpaRepository.findByUserIdWithLock(userId)
+        .orElseThrow(EntityNotFoundException::new);
+  }
 
-    @Override
-    public Point save(Point point) {
-        return pointJpaRepository.save(point);
-    }
+  @Override
+  public Point save(Point point) {
+    return pointJpaRepository.save(point);
+  }
 
 }

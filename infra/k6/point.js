@@ -1,4 +1,4 @@
-import http from "k6/http";
+import http from "data/k6/http";
 import {sleep} from "k6";
 
 // 테스트 옵션 설정

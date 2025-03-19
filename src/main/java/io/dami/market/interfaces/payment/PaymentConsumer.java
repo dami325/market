@@ -2,7 +2,7 @@ package io.dami.market.interfaces.payment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dami.market.domain.payment.event.PayCompleteEvent;
+import io.dami.market.application.payment.event.PayCompleteEvent;
 import io.dami.market.domain.payment.outbox.PaymentOutbox;
 import io.dami.market.domain.payment.outbox.PaymentOutbox.PaymentOutboxStatus;
 import io.dami.market.domain.payment.outbox.PaymentOutboxService;

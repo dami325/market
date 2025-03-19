@@ -1,4 +1,4 @@
-import http from "k6/http";
+import http from "data/k6/http";
 import {sleep} from "k6";
 
 export let options = {
@@ -29,7 +29,8 @@ export default function () {
 
   if (res.status === 400) {
     let errorResponse = res.json();
-    console.warn(`User ${USER_ID} failed to create an order: ${errorResponse.message}`);
+    console.warn(
+        `User ${USER_ID} failed to create an order: ${errorResponse.message}`);
   }
 
   sleep(1);

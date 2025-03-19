@@ -10,18 +10,18 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
-	private final UserValidationInterceptor userValidationInterceptor;
-	private static final String[] USER_VALIDATION_URL = {
-			"/api/v1/coupons/**",
-	};
-	private static final String[] WHITE_LIST = {
-			""
-	};
+  private final UserValidationInterceptor userValidationInterceptor;
+  private static final String[] USER_VALIDATION_URL = {
+      "/api/v1/coupons/**",
+  };
+  private static final String[] WHITE_LIST = {
+      ""
+  };
 
-	@Override
-	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(userValidationInterceptor)
-				.addPathPatterns(USER_VALIDATION_URL) // 검증을 적용할 URL 패턴
-				.excludePathPatterns(WHITE_LIST); // 예외 처리할 URL 패턴
-	}
+  @Override
+  public void addInterceptors(InterceptorRegistry registry) {
+    registry.addInterceptor(userValidationInterceptor)
+        .addPathPatterns(USER_VALIDATION_URL) // 검증을 적용할 URL 패턴
+        .excludePathPatterns(WHITE_LIST); // 예외 처리할 URL 패턴
+  }
 }
