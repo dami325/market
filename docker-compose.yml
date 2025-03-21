@@ -2,7 +2,7 @@ version: '3'
 services:
 
   influxdb:
-    image: bitnami/influxdb:1.8.5
+    image: bitnami/influxdb
     container_name: influxdb
     ports:
       - "8086:8086"

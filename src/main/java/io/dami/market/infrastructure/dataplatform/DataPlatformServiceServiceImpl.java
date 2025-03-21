@@ -1,6 +1,6 @@
 package io.dami.market.infrastructure.dataplatform;
 
-import io.dami.market.application.payment.event.PayCompleteEvent;
+import io.dami.market.application.event.PayCompleteEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

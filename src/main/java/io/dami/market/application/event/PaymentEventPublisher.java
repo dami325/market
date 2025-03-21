@@ -1,4 +1,4 @@
-package io.dami.market.application.payment.event;
+package io.dami.market.application.event;
 
 public interface PaymentEventPublisher {
 

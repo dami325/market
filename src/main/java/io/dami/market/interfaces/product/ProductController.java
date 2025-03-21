@@ -1,5 +1,6 @@
 package io.dami.market.interfaces.product;
 
+import io.dami.market.domain.product.ProductResult;
 import io.dami.market.domain.product.ProductService;
 import io.dami.market.interfaces.advice.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,7 +33,7 @@ public class ProductController {
       @ApiResponse(responseCode = "200", description = "상품 조회 성공")
   })
   @GetMapping
-  public ResponseEntity<Page<ProductResponse.ProductDetails>> getProducts(
+  public ResponseEntity<Page<ProductResult.ProductDetails>> getProducts(
       @RequestParam(defaultValue = "0") int page) {
     return ResponseEntity.ok(productService.getProducts(PageRequest.of(page, 10)));
   }
@@ -54,7 +55,7 @@ public class ProductController {
       @ApiResponse(responseCode = "200", description = "상품 조회 성공")
   })
   @GetMapping("/rank")
-  public ResponseEntity<List<ProductResponse.Top5ProductDetails>> getProductsTop5() {
+  public ResponseEntity<List<ProductResult.Top5ProductDetails>> getProductsTop5() {
     return ResponseEntity.ok(productService.getProductsTop5());
   }
 

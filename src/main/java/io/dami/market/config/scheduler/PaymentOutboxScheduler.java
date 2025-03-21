@@ -1,11 +1,11 @@
-package io.dami.market.interfaces.payment;
+package io.dami.market.config.scheduler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dami.market.application.payment.event.PayCompleteEvent;
-import io.dami.market.application.payment.event.PaymentEventPublisher;
-import io.dami.market.domain.payment.outbox.PaymentOutbox;
-import io.dami.market.domain.payment.outbox.PaymentOutboxRepository;
+import io.dami.market.application.event.PayCompleteEvent;
+import io.dami.market.application.event.PaymentEventPublisher;
+import io.dami.market.domain.outbox.PaymentOutbox;
+import io.dami.market.domain.outbox.PaymentOutboxRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;

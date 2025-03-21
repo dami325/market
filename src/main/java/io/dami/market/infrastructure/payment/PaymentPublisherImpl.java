@@ -2,8 +2,8 @@ package io.dami.market.infrastructure.payment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dami.market.application.payment.event.PayCompleteEvent;
-import io.dami.market.application.payment.event.PaymentEventPublisher;
+import io.dami.market.application.event.PayCompleteEvent;
+import io.dami.market.application.event.PaymentEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;

@@ -1,4 +1,4 @@
-package io.dami.market.domain.payment.outbox;
+package io.dami.market.domain.outbox;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

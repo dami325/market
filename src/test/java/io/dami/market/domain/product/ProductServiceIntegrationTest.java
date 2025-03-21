@@ -93,7 +93,7 @@ class ProductServiceIntegrationTest extends IntegrationServiceTest {
     Pageable pageable = PageRequest.of(0, 10);
 
     // when
-    Page<ProductResponse.ProductDetails> result = productService.getProducts(pageable);
+    Page<ProductResult.ProductDetails> result = productService.getProducts(pageable);
 
     // then
     Assertions.assertThat(result.getContent().size()).isEqualTo(3);

@@ -13,7 +13,7 @@ public interface ProductRepository {
 
   Long getProductsCount();
 
-  List<ProductResponse.Top5ProductDetails> getProductsTop5();
+  List<ProductResult.Top5ProductDetails> getProductsTop5();
 
   List<Product> findAllByIdWithLock(Set<Long> orderProductIds);
 

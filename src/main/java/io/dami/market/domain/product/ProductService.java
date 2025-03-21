@@ -23,10 +23,10 @@ public class ProductService {
 
 
   @Transactional(readOnly = true)
-  public Page<ProductResponse.ProductDetails> getProducts(Pageable pageable) {
+  public Page<ProductResult.ProductDetails> getProducts(Pageable pageable) {
 
-    List<ProductResponse.ProductDetails> content = productRepository.getProducts(pageable).stream()
-        .map(ProductResponse.ProductDetails::new)
+    List<ProductResult.ProductDetails> content = productRepository.getProducts(pageable).stream()
+        .map(ProductResult.ProductDetails::new)
         .toList();
 
     Long total = productRepository.getProductsCount();
@@ -39,9 +39,9 @@ public class ProductService {
     return productRepository.getProduct(productId);
   }
 
-  @Cacheable(value = "top5ProductDetails", key = "'top5'", cacheManager = "redisCacheManager")
+  @Cacheable(value = "TOP_5_PRODUCT_DETAILS", key = "'TOP5'", cacheManager = "redisCacheManager")
   @Transactional(readOnly = true)
-  public List<ProductResponse.Top5ProductDetails> getProductsTop5() {
+  public List<ProductResult.Top5ProductDetails> getProductsTop5() {
     return productRepository.getProductsTop5();
   }
 

@@ -1,4 +1,4 @@
-package io.dami.market.config;
+package io.dami.market.config.scheduler;
 
 import io.dami.market.domain.coupon.Coupon;
 import io.dami.market.domain.coupon.CouponRepository;

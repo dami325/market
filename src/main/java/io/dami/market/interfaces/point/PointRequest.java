@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 
 public record PointRequest() {
-
   public record PointUpdate(
       @Schema(example = "5")
       Long userId,

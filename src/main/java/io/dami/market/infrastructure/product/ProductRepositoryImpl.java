@@ -2,11 +2,13 @@ package io.dami.market.infrastructure.product;
 
 import io.dami.market.domain.product.Product;
 import io.dami.market.domain.product.ProductRepository;
+import io.dami.market.domain.product.ProductResult;
 import io.dami.market.interfaces.product.ProductResponse;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +36,7 @@ public class ProductRepositoryImpl implements ProductRepository {
   }
 
   @Override
-  public List<ProductResponse.Top5ProductDetails> getProductsTop5() {
+  public List<ProductResult.Top5ProductDetails> getProductsTop5() {
     return querydslRepository.getProductsTop5();
   }
 

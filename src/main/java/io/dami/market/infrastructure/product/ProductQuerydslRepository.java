@@ -7,8 +7,8 @@ import static io.dami.market.domain.product.QProduct.product;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.dami.market.domain.order.Order;
 import io.dami.market.domain.product.Product;
-import io.dami.market.interfaces.product.ProductResponse;
-import io.dami.market.interfaces.product.QProductResponse_Top5ProductDetails;
+import io.dami.market.domain.product.ProductResult;
+import io.dami.market.domain.product.QProductResult_Top5ProductDetails;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -37,9 +37,9 @@ public class ProductQuerydslRepository {
         .fetchOne();
   }
 
-  public List<ProductResponse.Top5ProductDetails> getProductsTop5() {
+  public List<ProductResult.Top5ProductDetails> getProductsTop5() {
     return queryFactory
-        .select(new QProductResponse_Top5ProductDetails(
+        .select(new QProductResult_Top5ProductDetails(
             product.id,
             product.name,
             product.price,

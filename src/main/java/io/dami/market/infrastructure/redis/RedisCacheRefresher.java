@@ -1,5 +1,6 @@
 package io.dami.market.infrastructure.redis;
 
+import io.dami.market.domain.product.ProductResult;
 import io.dami.market.infrastructure.product.ProductQuerydslRepository;
 import io.dami.market.interfaces.product.ProductResponse;
 import java.util.List;
@@ -17,7 +18,7 @@ public class RedisCacheRefresher {
 
   @Scheduled(fixedRate = 3600000)
   public void refreshTop5ProductsCache() {
-    List<ProductResponse.Top5ProductDetails> updatedProducts = productQuerydslRepository.getProductsTop5();
-    redisCacheManager.getCache("top5ProductDetails").put("top5", updatedProducts);
+    List<ProductResult.Top5ProductDetails> updatedProducts = productQuerydslRepository.getProductsTop5();
+    redisCacheManager.getCache("TOP_5_PRODUCT_DETAILS").put("TOP5", updatedProducts);
   }
 }

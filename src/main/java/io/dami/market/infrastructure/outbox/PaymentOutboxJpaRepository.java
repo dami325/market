@@ -1,6 +1,6 @@
-package io.dami.market.infrastructure.payment.outbox;
+package io.dami.market.infrastructure.outbox;
 
-import io.dami.market.domain.payment.outbox.PaymentOutbox;
+import io.dami.market.domain.outbox.PaymentOutbox;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
