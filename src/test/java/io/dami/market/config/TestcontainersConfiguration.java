@@ -19,11 +19,9 @@ public class TestcontainersConfiguration {
 
   public static final GenericContainer REDIS;
 
-  public static final ConfluentKafkaContainer KAFKA;
-
   static {
     MYSQL_CONTAINER = new MySQLContainer<>(DockerImageName.parse("mysql:8.0"))
-        .withDatabaseName("hhplus")
+        .withDatabaseName("market")
         .withUsername("test")
         .withPassword("test");
     MYSQL_CONTAINER.start();
@@ -42,12 +40,6 @@ public class TestcontainersConfiguration {
     System.setProperty("spring.data.redis.host", REDIS.getHost());
     System.setProperty("spring.data.redis.port", String.valueOf(REDIS.getFirstMappedPort()));
     System.setProperty("spring.data.redis.password", REDIS_TEST_PASSWORD);
-
-    KAFKA = new ConfluentKafkaContainer("confluentinc/cp-kafka:latest");
-    KAFKA.start();
-    System.setProperty("spring.kafka.bootstrap-servers", KAFKA.getBootstrapServers());
-
-
   }
 
   @PreDestroy
@@ -57,9 +49,6 @@ public class TestcontainersConfiguration {
     }
     if (REDIS.isRunning()) {
       REDIS.stop();
-    }
-    if (KAFKA.isRunning()) {
-      KAFKA.stop();
     }
   }
 }

@@ -38,7 +38,6 @@ public class LocalDummyData {
   public void init() {
     if (initDummy) {
 
-      int userCount = 1000;
 
       couponRepository.save(Coupon.builder()
           .name("선착순쿠폰1")
@@ -56,7 +55,7 @@ public class LocalDummyData {
           .totalQuantity(500000)
           .build());
 
-      for (int i = 0; i < 100; i++) {
+      for (int i = 0; i < 20; i++) {
         productRepository.save(Product.builder()
             .name("product " + i)
             .price(new BigDecimal("1000"))
@@ -64,6 +63,7 @@ public class LocalDummyData {
             .build());
       }
 
+      int userCount = 10;
       for (int i = 1; i <= userCount; i++) {
         User user = userRepository.save(User.builder()
             .username("tester" + i)
@@ -92,7 +92,8 @@ public class LocalDummyData {
 
         int count = 0;
 
-        for (long j = 1L; j < 10L; j++) {
+        long orderProductCount = 10L;
+        for (long j = 1L; j < orderProductCount; j++) {
           Long productIndex = j;
           if (count == 5) {
             break;

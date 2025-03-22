@@ -30,7 +30,7 @@ public class CouponService {
   @DistributedLock(key = "'COUPON_' + #couponId")
   @Transactional
   public void issueACouponV1(Long couponId, Long userId) {
-    Coupon coupon = couponRepository.getCouponWithLock(couponId);
+    Coupon coupon = couponRepository.getCoupon(couponId);
     coupon.issuedCoupon(userId);
   }
 
